@@ -1,0 +1,5 @@
+#PITCH channel #2 1254-1750
+#ROLL channel #1 1250-1752
+#THROTTLE #3 1010-2000
+#YAW #4 999-2001
+#FLIGHT MODE #5 1001-1509-2001 (Stable, Althold, Land)
