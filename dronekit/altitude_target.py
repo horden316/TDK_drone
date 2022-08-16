@@ -13,14 +13,14 @@ parser.add_argument('--connect',
                    help="Vehicle connection target string. If not specified, SITL automatically started and used.")
 args = parser.parse_args()
 
-connection_string = '/dev/cu.usbmodem142101'
+connection_string = 'tcp:192.168.4.1:1234'
 sitl = None
 
 # Start SITL if no connection string specified
-if not connection_string:
-    import dronekit_sitl
-    sitl = dronekit_sitl.start_default()
-    connection_string = sitl.connection_string()
+# if not connection_string:
+#     import dronekit_sitl
+#     sitl = dronekit_sitl.start_default()
+#     connection_string = sitl.connection_string()
 
 
 # Connect to the Vehicle
@@ -72,9 +72,10 @@ def arm_and_takeoff_nogps(aTargetAltitude):
             break
         elif current_altitude >= aTargetAltitude:
             thrust = SMOOTH_TAKEOFF_THRUST
+            print("thrust set to SMOOTH")
         set_attitude(thrust = thrust)
         time.sleep(0.2)
-
+#透過mavlink傳送目標高度資訊
 def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
                          yaw_angle = None, yaw_rate = 0.0, use_yaw_rate = False,
                          thrust = 0.5):
@@ -103,7 +104,7 @@ def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
         thrust  # Thrust
     )
     vehicle.send_mavlink(msg)
-
+#
 def set_attitude(roll_angle = 0.0, pitch_angle = 0.0,
                  yaw_angle = None, yaw_rate = 0.0, use_yaw_rate = False,
                  thrust = 0.5, duration = 0):
@@ -117,17 +118,22 @@ def set_attitude(roll_angle = 0.0, pitch_angle = 0.0,
     send_attitude_target(roll_angle, pitch_angle,
                          yaw_angle, yaw_rate, False,
                          thrust)
+
+    #在時間內不斷送出目標高度
     start = time.time()
     while time.time() - start < duration:
         send_attitude_target(roll_angle, pitch_angle,
                              yaw_angle, yaw_rate, False,
                              thrust)
         time.sleep(0.1)
+        
     # Reset attitude, or it will persist for 1s more due to the timeout
+    #將高度目標值設0
     send_attitude_target(0, 0,
                          0, 0, True,
                          thrust)
 
+#四元數轉換
 def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
     """
     Convert degrees to quaternions
