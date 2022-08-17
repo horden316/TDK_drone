@@ -22,7 +22,17 @@ connection_string = '/dev/ttyACM1'
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=115200)
 
-def arm_and_takeoff_nogps(aTargetAltitude):
+def arm():
+    print("Basic pre-arm checks")
+    vehicle.mode = VehicleMode("GUIDED_NOGPS")
+    vehicle.armed = True
+    while not vehicle.armed:
+        print(" Waiting for arming...")
+        vehicle.armed = True
+        time.sleep(1)
+    print("armed")
+
+def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_TAKEOFF_THRUST = 0.55,limit_time=5):
     """
     Arms vehicle and fly to aTargetAltitude without GPS data.
     """
@@ -153,11 +163,10 @@ def distanceCalculate(p1, p2):
     return dis
 
 ##############主程式##############
-print("pre_takeoff")
-set_attitude(thrust = 0.6, duration = 2)
 time.sleep(2)
 print("takeoff")
 arm_and_takeoff_nogps(0.6)
+set_attitude(thrust = 0.5,duration=2)
 while True:
     ret, frame = cap.read()
     #frame = cv2.imread('./webcam/opencv_frame_0.png')
@@ -203,10 +212,10 @@ while True:
             x_distance=center[0]-cx
             if x_distance > 10 :
                 print("Roll right")
-                set_attitude(pitch_angle = -5, thrust = 0.5)
+                set_attitude(roll_angle = -5, thrust = 0.5)
             elif x_distance < -10 and cx > 40 :
                 print("Roll left")
-                set_attitude(pitch_angle = 5, thrust = 0.5)
+                set_attitude(roll_angle = 5, thrust = 0.5)
             else:
                 print("Pitch Forward")
                 set_attitude(pitch_angle = -5, thrust = 0.5)
