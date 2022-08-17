@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
 #screen resolution
+#0817 add keyinput for thershold
 X=160
 Y=120
+h=50
 center =  (int(X/2),int(Y/2))
 center_x = int(X/2)
 center_y = int(Y/2)
@@ -15,10 +17,11 @@ def distanceCalculate(p1, p2):
     dis = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
     return dis
 while True:
+    keyPress = cv2.waitKey(20)
     ret, frame = cap.read()
     #frame = cv2.imread('./webcam/opencv_frame_0.png')
     low_b = np.uint8([255,255,255])
-    high_b = np.uint8([50,50,50])
+    high_b = np.uint8([h,h,h])
     mask = cv2.inRange(frame, high_b, low_b)
     remask = cv2.bitwise_not(mask)
     contours, hierarchy = cv2.findContours(remask, 1, cv2.CHAIN_APPROX_SIMPLE)
@@ -66,8 +69,9 @@ while True:
     #cv2.drawContours(frame, c, -1, (0,255,0), 5)
     cv2.imshow("Mask",remask)
     cv2.imshow("Frame",frame)
-    if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
+    if keyPress & 0xff == ord('q'):   # 1 is the time in ms
         break
+
 cap.release()
 cv2.destroyAllWindows()
 
