@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-#2022/8/15
+#2022/8/17 update
+#adding arm function, takeoff safety
 #line following using contours method
 import cv2
 import numpy as np
@@ -25,11 +26,6 @@ def arm_and_takeoff_nogps(aTargetAltitude):
     """
     Arms vehicle and fly to aTargetAltitude without GPS data.
     """
-
-    ##### CONSTANTS #####
-    DEFAULT_TAKEOFF_THRUST = 0.7
-    SMOOTH_TAKEOFF_THRUST = 0.6
-
     print("Basic pre-arm checks")
     # Don't let the user try to arm until autopilot is ready
     # If you need to disable the arming check,
@@ -57,10 +53,18 @@ def arm_and_takeoff_nogps(aTargetAltitude):
     print("Taking off!")
 
     thrust = DEFAULT_TAKEOFF_THRUST
+    start = time.time()
     while True:
         current_altitude = vehicle.rangefinder.distance
         print(" Altitude: %f  Desired: %f" %
               (current_altitude, aTargetAltitude))
+        if time.time() - start > limit_time:
+            print("take off timeout")
+            print("change mode to landing")
+            vehicle.mode = VehicleMode("LAND")
+            time.sleep(1)
+            while True:
+                print("vehicle emergency landing: open controller")
         if current_altitude >= aTargetAltitude: # Trigger just below target alt.
             print("Reached target altitude")
             break
