@@ -8,7 +8,7 @@ center_x = int(X/2)
 center_y = int(Y/2)
 cross_size = 5
 cap = cv2.VideoCapture(1)
-
+FixedText_array=[]
 #VideoWriter
 fourcc = cv2.VideoWriter_fourcc('M','P','4','V') #指定影像編碼方式
 out = cv2.VideoWriter('output.mp4', fourcc, 20.0, (1280,  960))
@@ -19,13 +19,32 @@ blank_height=960
 
 cap.set(3, X)
 cap.set(4, Y)
-
+SetFixedText_seq=0
 def WriteText(frame2, text, seq): #(frame,文字,第幾個)
     Y_offset=480
     font_gap_px=20
     
     font_start_Y_px = seq*font_gap_px
     cv2.putText(frame2, text, (0, Y+Y_offset+font_start_Y_px), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
+
+def SetFixedText(text):
+    global SetFixedText_seq
+    global FixedText_array
+    # print(FixedText_array[SetFixedText_seq])
+    FixedText_array.append(text)
+    print("number:" + str(SetFixedText_seq))
+    SetFixedText_seq = SetFixedText_seq+1
+
+def WriteFixedText(frame2): #(frame,文字,第幾個)
+    X_offset=960
+    #font_gap_px=20
+
+    global SetFixedText_seq
+    global FixedText_array
+    
+    #font_start_Y_px = SetFixedText_seq*font_gap_px
+    for i in range (len(FixedText_array)):
+        cv2.putText(frame2, FixedText_array[i], (X+X_offset,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
 
 def distanceCalculate(p1, p2):
     """p1 and p2 in format (x1,y1) and (x2,y2) tuples"""
@@ -75,9 +94,11 @@ while True:
             cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
             distance = distanceCalculate(center, (cx,cy))
             WriteText(frame2, "Distance: " + str(distance),1)
+            WriteFixedText(frame2)
 
     else :
         print("I don't see the line")
+        SetFixedText("I don't see the line")
     cv2.drawContours(frame, c, -1, (0,255,0), 5)
     cv2.imshow("Mask",remask)
     cv2.imshow("Frame",frame)
