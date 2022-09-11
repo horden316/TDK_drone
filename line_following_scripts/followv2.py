@@ -28,7 +28,7 @@ def arm():
         time.sleep(1)
     print("armed")
 
-def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_TAKEOFF_THRUST = 0.55,limit_time=5):
+def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_TAKEOFF_THRUST = 0.55,limit_time=10):
     """
     Arms vehicle and fly to aTargetAltitude without GPS data.
     """
@@ -70,6 +70,7 @@ def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_T
             vehicle.mode = VehicleMode("LAND")
             time.sleep(1)
             while True:
+                time.sleep(1)
                 print("vehicle emergency landing: open controller")
         if current_altitude >= aTargetAltitude: # Trigger just below target alt.
             print("Reached target altitude")
@@ -163,6 +164,8 @@ time.sleep(2)
 print("takeoff")
 arm_and_takeoff_nogps(0.6)
 set_attitude(thrust = 0.5,duration=2)
+yawangle=math.degrees(vehicle.attitude.yaw)
+
 while True:
     ret, frame = cap.read()
     #frame = cv2.imread('./webcam/opencv_frame_0.png')
@@ -226,7 +229,25 @@ while True:
             cv2.putText(frame, "x_distance: " + str(x_distance), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                         cv2.LINE_AA)
         
-        yawangle=vehicle.attitude.yaw
+
+        if angle > 0 :
+            theta = 90 - angle
+            set_attitude(yaw_angle=yawangle-theta)
+            print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            print("set:"+str(yawangle-theta))
+            print("yaw right")
+        elif angle <= 0 :
+            theta = 90 + angle
+            set_attitude(yaw_angle=yawangle+theta)
+            print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            print("set:"+str(yawangle+theta))
+            print("yaw left")
+        else :
+            print("Pitch Forward")
+            print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            set_attitude(pitch_angle = -5, thrust = 0.5)
+
+        '''
         if angle<85 & angle>0 :
             yawangle=yawangle+5
             set_attitude(yaw_angle=yawangle)
@@ -238,6 +259,7 @@ while True:
         else :
             print("Pitch Forward")
             set_attitude(pitch_angle = -5, thrust = 0.5)
+        '''
             
     else :
         print("I don't see the line")
