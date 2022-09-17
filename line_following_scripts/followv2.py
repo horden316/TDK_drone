@@ -217,7 +217,7 @@ while True:
                 set_attitude(roll_angle = 5, thrust = 0.5)
             else:
                 print("Pitch Forward")
-                set_attitude(pitch_angle = -5, thrust = 0.5)
+                set_attitude(pitch_angle = 0, thrust = 0.5)
 
             
             cv2.circle(frame, (cx,cy), 5, (0,0,255), -1)
@@ -268,6 +268,8 @@ while True:
     cv2.imshow("Erosion",erosion)
     cv2.imshow("Frame",frame)
     if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
+        print("Setting LAND mode...")
+        vehicle.mode = VehicleMode("LAND")
         break
 print("Close vehicle object")
 vehicle.close()
