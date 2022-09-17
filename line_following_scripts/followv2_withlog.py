@@ -4,6 +4,19 @@ from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelativ
 from pymavlink import mavutil # Needed for command message definitions
 import time
 import math
+
+
+SetFixedText_seq=0
+FixedText_array=[]
+
+#VideoWriter
+fourcc = cv2.VideoWriter_fourcc(*'XVID') #指定影像編碼方式
+out = cv2.VideoWriter('output.avi', fourcc, 20.0, (480,  360))
+
+#建立空frame2
+blank_width=480
+blank_height=360
+
 #screen resolution
 X=160
 Y=120
@@ -14,9 +27,34 @@ cross_size = 5
 cap = cv2.VideoCapture(0)
 cap.set(3, X)
 cap.set(4, Y)
-connection_string = '/dev/ttyACM1'
+connection_string = '/dev/ttyACM0'
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=115200)
+
+def WriteText(frame2, text, seq): #(frame,文字,第幾個)
+    Y_offset=0
+    font_gap_px=20
+    
+    font_start_Y_px = seq*font_gap_px
+    cv2.putText(frame2, text, (0, Y+Y_offset+font_start_Y_px), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
+
+def SetFixedText(text):
+    global SetFixedText_seq
+    global FixedText_array
+    # print(FixedText_array[SetFixedText_seq])
+    FixedText_array.append(text)
+    SetFixedText_seq = SetFixedText_seq+1
+
+def WriteFixedText(frame2): #(frame,文字,第幾個)
+    X_offset=0
+    #font_gap_px=20
+
+    global SetFixedText_seq
+    global FixedText_array
+    
+    #font_start_Y_px = SetFixedText_seq*font_gap_px
+    for i in range (len(FixedText_array)):
+        cv2.putText(frame2, FixedText_array[i], (X+X_offset,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
 
 def arm():
     print("Basic pre-arm checks")
@@ -168,7 +206,7 @@ yawangle=math.degrees(vehicle.attitude.yaw)
 
 while True:
     ret, frame = cap.read()
-    #frame = cv2.imread('./webcam/opencv_frame_0.png')
+    frame2=np.zeros((blank_height, blank_width,3),np.uint8)
     low_b = np.uint8([255,255,255])
     high_b = np.uint8([50,50,50])
     mask = cv2.inRange(frame, high_b, low_b)
@@ -183,6 +221,7 @@ while True:
     start=time.time()
     if time.time() - start > 20:
         print("Setting LAND mode...")
+        SetFixedText("Setting LAND mode...")
         vehicle.mode = VehicleMode("LAND")
         time.sleep(1)
         break
@@ -211,12 +250,15 @@ while True:
             x_distance=center[0]-cx
             if x_distance > 10 :
                 print("Roll right")
+                WriteText(frame2, "Roll right", 2)
                 set_attitude(roll_angle = -5, thrust = 0.5)
             elif x_distance < -10 and cx > 40 :
                 print("Roll left")
+                WriteText(frame2, "Roll left", 2)
                 set_attitude(roll_angle = 5, thrust = 0.5)
             else:
                 print("Pitch Forward")
+                WriteText(frame2, "Pitch Forward", 2)
                 set_attitude(pitch_angle = 0, thrust = 0.5)
 
             
@@ -226,25 +268,31 @@ while True:
             #BGR
             cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
             #distance = distanceCalculate(center, (cx,cy))
-            cv2.putText(frame, "x_distance: " + str(x_distance), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
-                        cv2.LINE_AA)
         
 
         if angle > 0 :
             theta = 90 - angle
             set_attitude(yaw_angle=yawangle-theta)
             print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
             print("set:"+str(yawangle-theta))
+            WriteText(frame2, "set:"+str(yawangle-theta), 3)
             print("yaw right")
+            WriteText(frame2, "yaw right", 5)
         elif angle <= 0 :
             theta = 90 + angle
             set_attitude(yaw_angle=yawangle+theta)
             print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
             print("set:"+str(yawangle+theta))
+            WriteText(frame2, "set:"+str(yawangle+theta), 3)
             print("yaw left")
+            WriteText(frame2, "yaw left", 5)
         else :
             print("Pitch Forward")
+            WriteText(frame2, "Pitch Forward", 5)
             print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
             set_attitude(pitch_angle = -5, thrust = 0.5)
 
         '''
@@ -263,17 +311,30 @@ while True:
             
     else :
         print("I don't see the line")
+        WriteText(frame2, "I don't see the line", 1)
     #cv2.drawContours(frame, c, -1, (0,255,0), 5)
     cv2.imshow("Mask",remask)
     cv2.imshow("Erosion",erosion)
     cv2.imshow("Frame",frame)
+
+
+    h,w,_ = frame.shape
+    frame2[0:h, 0:w] = frame
+    cv2.imshow("frame2", frame2)
+
+    WriteFixedText(frame2)
+
+    out.write(frame2)
+
     if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
         print("Setting LAND mode...")
+        SetFixedText("Setting LAND mode...")
         vehicle.mode = VehicleMode("LAND")
         break
 print("Close vehicle object")
 vehicle.close()
 print('mission complete')
 cap.release()
+out.release()
 cv2.destroyAllWindows()
 
