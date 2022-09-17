@@ -204,6 +204,8 @@ arm_and_takeoff_nogps(0.6)
 set_attitude(thrust = 0.5,duration=2)
 yawangle=math.degrees(vehicle.attitude.yaw)
 
+
+start=time.time()
 while True:
     ret, frame = cap.read()
     frame2=np.zeros((blank_height, blank_width,3),np.uint8)
@@ -218,7 +220,7 @@ while True:
     contours, hierarchy = cv2.findContours(erosion, 1, cv2.CHAIN_APPROX_SIMPLE)
     cv2.line(frame, (center_x, center_y-cross_size), (center_x, center_y+cross_size), (0, 0, 255), 1)
     cv2.line(frame, (center_x-cross_size, center_y), (center_x+cross_size, center_y), (0, 0, 255), 1)
-    start=time.time()
+    
     if time.time() - start > 20:
         print("Setting LAND mode...")
         SetFixedText("Setting LAND mode...")
