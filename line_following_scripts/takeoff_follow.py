@@ -253,7 +253,7 @@ while current_altitude < aTargetAltitude:
             else:
                 print("Pitch Forward")
                 WriteText(frame2, "Pitch Forward", 2)
-                set_attitude(pitch_angle = 0)
+                set_attitude(pitch_angle = 0, thrust = DEFAULT_TAKEOFF_THRUST)
 
             
             cv2.circle(frame, (cx,cy), 5, (0,0,255), -1)
@@ -268,7 +268,7 @@ while current_altitude < aTargetAltitude:
 
         if angle > 0 :
             theta = 90 - angle
-            set_attitude(yaw_angle=yawangle-theta)
+            set_attitude(yaw_angle=yawangle-theta, thrust = DEFAULT_TAKEOFF_THRUST)
             print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
             WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
             print("set:"+str(yawangle-theta))
@@ -277,7 +277,7 @@ while current_altitude < aTargetAltitude:
             WriteText(frame2, "yaw right", 5)
         elif angle <= 0 :
             theta = 90 + angle
-            set_attitude(yaw_angle=yawangle+theta)
+            set_attitude(yaw_angle=yawangle+theta, thrust = DEFAULT_TAKEOFF_THRUST)
             print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
             WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
             print("set:"+str(yawangle+theta))
@@ -289,16 +289,16 @@ while current_altitude < aTargetAltitude:
             WriteText(frame2, "Pitch Forward", 5)
             print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
             WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            set_attitude(pitch_angle = -5)
+            set_attitude(pitch_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
     
             
     else :
         print("I don't see the line")
         WriteText(frame2, "I don't see the line", 1)
     #cv2.drawContours(frame, c, -1, (0,255,0), 5)
-    cv2.imshow("Mask",remask)
-    cv2.imshow("Erosion",erosion)
-    cv2.imshow("Frame",frame)
+    #cv2.imshow("Mask",remask)
+    #cv2.imshow("Erosion",erosion)
+    #cv2.imshow("Frame",frame)
 
     h,w,_ = frame.shape
     frame2[0:h, 0:w] = frame
