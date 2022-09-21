@@ -34,24 +34,50 @@ connection_string = '/dev/ttyACM1'
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=115200)
 
-def WriteText(frame, text1):
-    cv2.putText(frame, text1, (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.1, (201, 194, 9), 1, cv2.LINE_AA)
+def WriteText(frame2, text, seq): #(frame,文字,第幾個)
+    Y_offset=480
+    font_gap_px=20
+    
+    font_start_Y_px = seq*font_gap_px
+    cv2.putText(frame2, text, (0, Y+Y_offset+font_start_Y_px), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
+
+def SetFixedText(text):
+    global SetFixedText_seq
+    global FixedText_array
+    # print(FixedText_array[SetFixedText_seq])
+    FixedText_array.append(text)
+    SetFixedText_seq = SetFixedText_seq+1
+
+def WriteFixedText(frame2): #(frame,文字,第幾個)
+    X_offset=960
+    #font_gap_px=20
+
+    global SetFixedText_seq
+    global FixedText_array
+    
+    #font_start_Y_px = SetFixedText_seq*font_gap_px
+    for i in range (len(FixedText_array)):
+        cv2.putText(frame2, FixedText_array[i], (X+X_offset,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
 
 def arm():
     print("Basic pre-arm checks")
+    SetFixedText('Connecting to vehicle on: %s' % connection_string)
     vehicle.mode = VehicleMode("GUIDED_NOGPS")
     vehicle.armed = True
     while not vehicle.armed:
         print(" Waiting for arming...")
+        SetFixedText('Connecting to vehicle on: %s' % connection_string)
         vehicle.armed = True
         time.sleep(1)
     print("armed")
+    SetFixedText("armed")
 
 def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_TAKEOFF_THRUST = 0.55,limit_time=5):
     """
     Arms vehicle and fly to aTargetAltitude without GPS data.
     """
     print("Basic pre-arm checks")
+    SetFixedText("Basic pre-arm checks")
     # Don't let the user try to arm until autopilot is ready
     # If you need to disable the arming check,
     # just comment it with your own responsibility.
@@ -64,6 +90,7 @@ def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_T
 
 
     print("Arming motors")
+    SetFixedText("Arming motors")
     # Copter should arm in GUIDED_NOGPS mode
     vehicle.mode = VehicleMode("GUIDED_NOGPS")
     vehicle.armed = True
@@ -76,6 +103,7 @@ def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_T
 
 
     print("Taking off!")
+    SetFixedText("Taking off!")
 
     thrust = DEFAULT_TAKEOFF_THRUST
     start = time.time()
@@ -83,19 +111,26 @@ def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_T
         current_altitude = vehicle.rangefinder.distance
         print(" Altitude: %f  Desired: %f" %
               (current_altitude, aTargetAltitude))
+        
+        WriteText(frame2, " Altitude: %f  Desired: %f" %
+              (current_altitude, aTargetAltitude), 1)
+
         if time.time() - start > limit_time:
             print("take off timeout")
             print("change mode to landing")
+            SetFixedText("take off timeout, change mode to landing")
             vehicle.mode = VehicleMode("LAND")
             time.sleep(1)
             while True:
                 print("vehicle emergency landing: open controller")
         if current_altitude >= aTargetAltitude: # Trigger just below target alt.
             print("Reached target altitude")
+            SetFixedText("Reached target altitude")
             break
         elif current_altitude >= aTargetAltitude:
             thrust = SMOOTH_TAKEOFF_THRUST
             print("thrust set to SMOOTH")
+            SetFixedText("thrust set to SMOOTH")
         set_attitude(thrust = thrust)
         time.sleep(0.2)
 
@@ -184,6 +219,7 @@ arm_and_takeoff_nogps(0.6)
 set_attitude(thrust = 0.5,duration=2)
 while True:
     ret, frame = cap.read()
+    frame2=np.zeros((blank_height, blank_width,3),np.uint8)
     #frame = cv2.imread('./webcam/opencv_frame_0.png')
     low_b = np.uint8([255,255,255])
     high_b = np.uint8([50,50,50])
@@ -248,11 +284,17 @@ while True:
             
     else :
         print("I don't see the line")
+        SetFixedText("I don't see the line")
     #cv2.drawContours(frame, c, -1, (0,255,0), 5)
     cv2.imshow("Mask",remask)
     cv2.imshow("Erosion",erosion)
     cv2.imshow("Frame",frame)
-    out.write(frame)
+    h,w,_ = frame.shape
+    frame2[0:h, 0:w] = frame
+    cv2.imshow("frame2", frame2)
+
+    
+    out.write(frame2)
     if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
         break
 
@@ -261,8 +303,10 @@ while True:
 
 
 print("Close vehicle object")
+SetFixedText("Close vehicle")
 vehicle.close()
 print('mission complete')
+SetFixedText("mission complete")
 cap.release()
 out.release()
 cv2.destroyAllWindows()
