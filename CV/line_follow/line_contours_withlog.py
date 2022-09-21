@@ -11,7 +11,7 @@ cap = cv2.VideoCapture(1)
 FixedText_array=[]
 #VideoWriter
 fourcc = cv2.VideoWriter_fourcc('M','P','4','V') #指定影像編碼方式
-out = cv2.VideoWriter('output.mp4', fourcc, 20.0, (1280,  960))
+out = cv2.VideoWriter('output.mp4', fourcc, 20.0, (480,  360))
 
 #建立空frame2
 blank_width=1280
@@ -21,7 +21,7 @@ cap.set(3, X)
 cap.set(4, Y)
 SetFixedText_seq=0
 def WriteText(frame2, text, seq): #(frame,文字,第幾個)
-    Y_offset=480
+    Y_offset=0
     font_gap_px=20
     
     font_start_Y_px = seq*font_gap_px
@@ -32,11 +32,11 @@ def SetFixedText(text):
     global FixedText_array
     # print(FixedText_array[SetFixedText_seq])
     FixedText_array.append(text)
-    print("number:" + str(SetFixedText_seq))
+    
     SetFixedText_seq = SetFixedText_seq+1
 
 def WriteFixedText(frame2): #(frame,文字,第幾個)
-    X_offset=960
+    X_offset=0
     #font_gap_px=20
 
     global SetFixedText_seq
