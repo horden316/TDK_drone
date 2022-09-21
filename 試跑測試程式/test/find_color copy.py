@@ -1,4 +1,5 @@
 # Python code for Multiple Color Detection
+from pickle import TRUE
 import cv2
 import numpy as np
 import time
@@ -21,6 +22,7 @@ while(1):
     # HSV(hue-saturation-value)
     # color space 
     hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
+
     # Set range for red color and 
     # define mask
     #red_lower = np.array([136, 87, 111], np.uint8)
@@ -41,6 +43,7 @@ while(1):
     blue_lower = np.array([94, 80, 2], np.uint8)
     blue_upper = np.array([120, 255, 255], np.uint8)
     blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
+    
         
     # Morphological Transform, Dilation
     # for each color and bitwise_and operator
@@ -67,52 +70,19 @@ while(1):
     contours, hierarchy = cv2.findContours(red_mask,
                                             cv2.RETR_TREE,
                                             cv2.CHAIN_APPROX_SIMPLE)
-
-    for pic, contour in enumerate(contours):
+    c = max(contours, key=cv2.contourArea)
+    M = cv2.moments(c)
+    area = cv2.contourArea(contours)
+    if (area > 800) :
         c = max(contours, key=cv2.contourArea)
         M = cv2.moments(c)
-        area = cv2.contourArea(contour)
-        if(area > 800):
-            red = True
-            x, y, w, h = cv2.boundingRect(contour)
-            imageFrame = cv2.rectangle(imageFrame, (x, y), 
-                                        (x + w, y + h), 
-                                        (0, 0, 255), 2)
-            if M["m00"] !=0 :
-                cx = int(M['m10']/M['m00'])
-                cy = int(M['m01']/M['m00'])
-                print("X : "+str(cx)+" Y : "+str(cy))
-                cv2.circle(imageFrame, (cx,cy), 5, (0,0,255), -1)
-                cv2.putText(imageFrame, "Red Colour", (x, y),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.0,
-                        (0, 0, 255))
-            start = time.time()
-        if((time.time() - start)>0.5):
-            red = False  
+        blackbox = cv2.minAreaRect(c)
+        (x_min, y_min), (w_min, h_min), angle = blackbox
+        box = cv2.boxPoints(blackbox)
+        box = np.int0(box)
+        cv2.drawContours(imageFrame, [box], 0, (0, 0, 255), 3) 
 
-    # # Creating contour to track green color
-    if not red:
-        contours, hierarchy = cv2.findContours(green_mask,
-                                                cv2.RETR_TREE,
-                                                cv2.CHAIN_APPROX_SIMPLE)
-            
-        for pic, contour in enumerate(contours):
-            c = max(contours, key=cv2.contourArea)
-            M = cv2.moments(c)
-            area = cv2.contourArea(contour)
-            if(area > 1500):
-                x, y, w, h = cv2.boundingRect(contour)
-                imageFrame = cv2.rectangle(imageFrame, (x, y), 
-                                            (x + w, y + h),
-                                            (0, 255, 0), 2)
-                if M["m00"] !=0 :
-                    cx = int(M['m10']/M['m00'])
-                    cy = int(M['m01']/M['m00'])
-                    print("X : "+str(cx)+" Y : "+str(cy))
-                    cv2.circle(imageFrame, (cx,cy), 5, (0,0,255), -1)
-                    cv2.putText(imageFrame, "Green Colour", (x, y),
-                            cv2.FONT_HERSHEY_SIMPLEX, 
-                            1.0, (0, 255, 0))
+    # # Creating contour to track green colo
 
     # # Creating contour to track blue color
     # contours, hierarchy = cv2.findContours(blue_mask,
@@ -131,24 +101,10 @@ while(1):
     #                     1.0, (255, 0, 0))
  
     # Program Termination
-    # cv2.imshow("green_mask", green_mask)
-    # cv2.imshow("red_mask", red_mask)
-    blue_mask = cv2.bitwise_not(blue_mask)
-    cv2.imshow("red_mask", blue_mask)
+    cv2.imshow("hsv", hsvFrame)
+    cv2.imshow("green_mask", green_mask)
+    cv2.imshow("red_mask", red_mask)
     cv2.imshow("Multiple Color Detection in Real-TIme", imageFrame)
-    #circle detection
-    circles = cv2.HoughCircles(blue_mask, cv2.HOUGH_GRADIENT, 1, 20,
-                            param1=50, param2=30, minRadius=100, maxRadius=300)
-    print(str(circles))
-
-    detected_circles = np.uint16(np.around(circles))
-    detected_circles = np.around(circles)
-    for (x, y ,r) in detected_circles[0, :]:
-        cv2.circle(imageFrame, (x, y), r, (0, 0, 0), 3)
-        cv2.circle(imageFrame, (x, y), 2, (0, 255, 255), 3)
-    cv2.imshow('output',imageFrame)
-
-    #quit
     if cv2.waitKey(1) & 0xFF == ord('q'):
         webcam.release()
         cv2.destroyAllWindows()
