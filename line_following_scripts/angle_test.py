@@ -2,13 +2,15 @@ import cv2
 import numpy as np
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
 from pymavlink import mavutil # Needed for command message definitions
+import os
 import time
 import math
 h=50
 
 while True:
     keyPress = cv2.waitKey(20)
-    frame=cv2.imread("curve8.png")
+    basepath=os.getcwd()
+    frame=cv2.imread(basepath+"/line_following_scripts/curve8.png")
     #frame = cv2.imread('./webcam/opencv_frame_0.png')
     low_b = np.uint8([255,255,255])
     high_b = np.uint8([h,h,h])
