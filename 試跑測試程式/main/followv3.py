@@ -16,10 +16,7 @@ out = cv2.VideoWriter('output.avi', fourcc, 20.0, (480,  360))
 #建立空frame2
 blank_width=480
 blank_height=360
-# Set range for blue color and
-# define mask
-blue_lower = np.array([94, 80, 2], np.uint8)
-blue_upper = np.array([120, 255, 255], np.uint8)
+
 #screen resolution
 X=160
 Y=120
@@ -69,7 +66,7 @@ def arm():
         time.sleep(1)
     print("armed")
 
-def arm_and_takeoff_nogps(aTargetAltitude=0.5,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_TAKEOFF_THRUST = 0.55,limit_time=10,default_yaw=True):
+def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_TAKEOFF_THRUST = 0.55,limit_time=10,default_yaw=True):
     if default_yaw is True:
         yawangle = math.degrees(vehicle.attitude.yaw)
     else:
@@ -162,7 +159,6 @@ def set_attitude(roll_angle = 0.0, pitch_angle = 0.0,
         time.sleep(0.1)
         
     # Reset attitude, or it will persist for 1s more due to the timeout
-    # yaw_angle 從0 改成 None
     send_attitude_target(0, 0,
                          None, 0, True,
                          thrust)
@@ -194,63 +190,143 @@ def distanceCalculate(p1, p2):
 time.sleep(2)
 print("takeoff")
 yawangle=math.degrees(vehicle.attitude.yaw)
-arm_and_takeoff_nogps(aTargetAltitude=0.6,DEFAULT_TAKEOFF_THRUST = 0.52,SMOOTH_TAKEOFF_THRUST = 0.51,limit_time=8,default_yaw=True)
-set_attitude(yaw_angle=yawangle,thrust = 0.5,duration=2)
+arm_and_takeoff_nogps(aTargetAltitude=0.5,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_TAKEOFF_THRUST = 0.52,limit_time=10,default_yaw=True)
+#起飛後直行一段時間
+set_attitude(yaw_angle=yawangle,pitch_angle=-5,thrust = 0.5,duration=2)
+
 start=time.time()
 while True:
+    ret, frame = cap.read()
+    frame2=np.zeros((blank_height, blank_width,3),np.uint8)
+    low_b = np.uint8([255,255,255])
+    high_b = np.uint8([50,50,50])
+    mask = cv2.inRange(frame, high_b, low_b)
+    remask = cv2.bitwise_not(mask)
+    #apply erosion
+    kernel = np.ones((3,3), np.uint8)
+    erosion = cv2.erode(remask, kernel, iterations = 1)
+
+    contours, hierarchy = cv2.findContours(erosion, 1, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.line(frame, (center_x, center_y-cross_size), (center_x, center_y+cross_size), (0, 0, 255), 1)
+    cv2.line(frame, (center_x-cross_size, center_y), (center_x+cross_size, center_y), (0, 0, 255), 1)
+    
     if time.time() - start > 20:
         print("Setting LAND mode...")
         SetFixedText("Setting LAND mode...")
         vehicle.mode = VehicleMode("LAND")
         time.sleep(1)
         break
-    _, frame = cap.read()
-    frame2=np.zeros((blank_height, blank_width,3),np.uint8)
-    hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
-    kernal = np.ones((5, 5), "uint8")
-    blue_mask = cv2.dilate(blue_mask, kernal)
-    blue_mask = cv2.bitwise_not(blue_mask)
-    gray_blurred = cv2.blur(blue_mask, (3, 3))
-    # cv2.imshow("gray_blurred", gray_blurred)
-    # cv2.imshow("blue_mask", blue_mask)
-    # Apply Hough transform on the blurred image.
-    detected_circles = cv2.HoughCircles(gray_blurred, 
-                    cv2.HOUGH_GRADIENT, 1, 20, param1 = 100,
-                param2 = 20, minRadius = 30, maxRadius = 80)
-    
-    if detected_circles is not None:
-    
-        # Convert the circle parameters a, b and r to integers.
-        detected_circles = np.uint16(np.around(detected_circles))
-    
-        for pt in detected_circles[0, :]:
-            a, b, r = pt[0], pt[1], pt[2]
-    
-            # Draw the circumference of the circle.
-            cv2.circle(frame, (a, b), r, (0, 255, 0), 2)
-            # Draw a small circle (of radius 1) to show the center.
-            cv2.circle(frame, (a, b), 1, (0, 0, 255), 3)
-            # cv2.imshow("Detected Circle", img)
+    if len(contours) > 0 :
+        c = max(contours, key=cv2.contourArea)
+        M = cv2.moments(c)
+        blackbox = cv2.minAreaRect(c)
+        (x_min, y_min), (w_min, h_min), angle = blackbox
+        box = cv2.boxPoints(blackbox)
+        box = np.int0(box)
+        cv2.drawContours(frame, [box], 0, (0, 0, 255), 3)
+        if angle < -45:
+            angle = 90 + angle
+        if w_min < h_min and angle > 0:
+            angle = (90 - angle) * -1
+        if w_min > h_min and angle < 0:
+            angle = 90 + angle
+        print("Angle:" + str(angle))
+        cv2.putText(frame, "Angle: " + str(angle), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
+                        cv2.LINE_AA)
 
-            x_distance=center[0]-a
-            y_distance=center[1]-b
+        if M["m00"] !=0 :
+            cx = int(M['m10']/M['m00'])
+            cy = int(M['m01']/M['m00'])
+            print("X : "+str(cx)+" Y : "+str(cy))
+            x_distance=center[0]-cx
             if x_distance > 10 :
                 print("Roll left")
-                set_attitude(roll_angle = -5, thrust = 0.5, duration = 0.5)
+                WriteText(frame2, "Roll left", 2)
+                set_attitude(roll_angle = -5, thrust = 0.5,duration = 0.5)
             elif x_distance < -10 :
                 print("Roll right")
-                set_attitude(roll_angle = 5, thrust = 0.5, duration = 0.5)
-            elif y_distance > 10 :
-                print("pitch forward")
-                set_attitude(pitch_angle = -5, thrust = 0.5, duration = 0.5)
-            elif y_distance < -10 :
-                print("pitch backward")
-                set_attitude(pitch_angle = 5, thrust = 0.5, duration = 0.5)
+                WriteText(frame2, "Roll right", 2)
+                set_attitude(roll_angle = 5, thrust = 0.5,duration = 0.5)
+  
             else:
-                print("stay")
-                set_attitude(pitch_angle = 0, thrust = 0.5, duration = 0.5)
+                print("Pitch Forward")
+                WriteText(frame2, "Pitch Forward", 2)
+                set_attitude(pitch_angle = 0, thrust = 0.5,duration = 0.5)
+
             
+            cv2.circle(frame, (cx,cy), 5, (0,0,255), -1)
+            #centroid line
+            cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
+            #BGR
+            cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
+            #distance = distanceCalculate(center, (cx,cy))
+        
+    #yaw調整(yaw_angle)1絕對調整
+            # if angle > 0 :
+            #     theta = 90 - angle
+            #     set_attitude(yaw_angle=yawangle-theta)
+            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+            #     print("set:"+str(yawangle-theta))
+            #     WriteText(frame2, "set:"+str(yawangle-theta), 3)
+            #     print("yaw right")
+            #     WriteText(frame2, "yaw right", 5)
+            # elif angle <= 0 :
+            #     theta = 90 + angle
+            #     set_attitude(yaw_angle=yawangle+theta)
+            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+            #     print("set:"+str(yawangle+theta))
+            #     WriteText(frame2, "set:"+str(yawangle+theta), 3)
+            #     print("yaw left")
+            #     WriteText(frame2, "yaw left", 5)
+            # else :
+            #     print("Pitch Forward")
+            #     WriteText(frame2, "Pitch Forward", 5)
+            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+            #     set_attitude(pitch_angle = -5, thrust = 0.5)
+    #yaw調整(yaw_angle)2相對調整
+            # if angle<85 & angle>0 :
+            #     yawangle=yawangle+5
+            #     set_attitude(yaw_angle=yawangle)
+            #     print("yaw right")
+            # elif angle>-85 & angle<0 :
+            #     yawangle=yawangle-5
+            #     set_attitude(yaw_angle=yawangle)
+            #     print("yaw left")
+            # else :
+            #     print("Pitch Forward")
+            #     set_attitude(pitch_angle = -5, thrust = 0.5)
+    #yaw調整(yaw_rate)
+            # if angle > 10 :
+            #     set_attitude(yaw_rate=5, use_yaw_rate = True, thrust=0.5)
+            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+            #     print("yaw right")
+            #     WriteText(frame2, "yaw right", 5)
+            # elif angle <= -10 :
+            #     set_attitude(yaw_rate=-5, use_yaw_rate = True, thrust=0.5)
+            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+            #     print("yaw left")
+            #     WriteText(frame2, "yaw left", 5)
+            # else :
+            #     print("yaw rate zero")
+            #     set_attitude(yaw_rate=0, use_yaw_rate = True, thrust=0.5)
+            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+            #     #set_attitude(pitch_angle = -5, thrust = 0.5)
+            
+    else :
+        print("I don't see the line")
+        WriteText(frame2, "I don't see the line", 1)
+    #cv2.drawContours(frame, c, -1, (0,255,0), 5)
+    # cv2.imshow("Mask",remask)
+    # cv2.imshow("Erosion",erosion)
+    cv2.imshow("Frame",frame)
+
+
     h,w,_ = frame.shape
     frame2[0:h, 0:w] = frame
     cv2.imshow("frame2", frame2)

@@ -66,22 +66,11 @@ def arm():
         time.sleep(1)
     print("armed")
 
-def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_TAKEOFF_THRUST = 0.55,limit_time=10):
-    """
-    Arms vehicle and fly to aTargetAltitude without GPS data.
-    """
-    print("Basic pre-arm checks")
-    # Don't let the user try to arm until autopilot is ready
-    # If you need to disable the arming check,
-    # just comment it with your own responsibility.
-
-    '''
-    while not vehicle.is_armable:
-        print(" Waiting for vehicle to initialise...")
-        time.sleep(1)
-    '''
-
-
+def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_TAKEOFF_THRUST = 0.55,limit_time=10,default_yaw=True):
+    if default_yaw is True:
+        yawangle = math.degrees(vehicle.attitude.yaw)
+    else:
+        yawangle = 0
     print("Arming motors")
     # Copter should arm in GUIDED_NOGPS mode
     vehicle.mode = VehicleMode("GUIDED_NOGPS")
@@ -113,10 +102,10 @@ def arm_and_takeoff_nogps(aTargetAltitude,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_T
         if current_altitude >= aTargetAltitude: # Trigger just below target alt.
             print("Reached target altitude")
             break
-        elif current_altitude >= aTargetAltitude:
+        elif current_altitude >= aTargetAltitude*0.7:
             thrust = SMOOTH_TAKEOFF_THRUST
             print("thrust set to SMOOTH")
-        set_attitude(thrust = thrust)
+        set_attitude(yaw_angle=yawangle, thrust = thrust)
         time.sleep(0.2)
 
 def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
@@ -200,10 +189,10 @@ def distanceCalculate(p1, p2):
 ##############主程式##############
 time.sleep(2)
 print("takeoff")
-arm_and_takeoff_nogps(0.6)
-set_attitude(thrust = 0.5,duration=2)
 yawangle=math.degrees(vehicle.attitude.yaw)
-
+arm_and_takeoff_nogps(aTargetAltitude=0.5,DEFAULT_TAKEOFF_THRUST = 0.55,SMOOTH_TAKEOFF_THRUST = 0.52,limit_time=10,default_yaw=True)
+#起飛後直行一段時間
+set_attitude(yaw_angle=yawangle,pitch_angle=-5,thrust = 0.5,duration=2)
 
 start=time.time()
 while True:
@@ -253,15 +242,15 @@ while True:
             if x_distance > 10 :
                 print("Roll right")
                 WriteText(frame2, "Roll right", 2)
-                set_attitude(roll_angle = -5, thrust = 0.5)
-            elif x_distance < -10 and cx > 40 :
+                set_attitude(roll_angle = -5, thrust = 0.5,duration = 0.5)
+            if x_distance < -10 and cx > 40 :
                 print("Roll left")
                 WriteText(frame2, "Roll left", 2)
-                set_attitude(roll_angle = 5, thrust = 0.5)
+                set_attitude(roll_angle = 5, thrust = 0.5,duration = 0.5)
             else:
                 print("Pitch Forward")
                 WriteText(frame2, "Pitch Forward", 2)
-                set_attitude(pitch_angle = 0, thrust = 0.5)
+                set_attitude(pitch_angle = -5, thrust = 0.5,duration = 0.5)
 
             
             cv2.circle(frame, (cx,cy), 5, (0,0,255), -1)
