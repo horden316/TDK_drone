@@ -1,4 +1,6 @@
 #add PID control to follow.py
+from curses import KEY_PPAGE
+from msilib.schema import Error
 import cv2
 import numpy as np
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
@@ -28,6 +30,15 @@ cross_size = 5
 cap = cv2.VideoCapture(0)
 cap.set(3, X)
 cap.set(4, Y)
+#PID variables
+Kp = 0.8
+Ki = 0
+Kd = 0
+Target_value =0
+last_Err = 0
+total_Err = 0
+output = 0
+#################################drone connection#################################
 connection_string = '/dev/ttyACM0'
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=115200)
@@ -203,14 +214,11 @@ while True:
     high_b = np.uint8([50,50,50])
     mask = cv2.inRange(frame, high_b, low_b)
     remask = cv2.bitwise_not(mask)
-    #apply erosion
     kernel = np.ones((3,3), np.uint8)
     erosion = cv2.erode(remask, kernel, iterations = 1)
-
     contours, hierarchy = cv2.findContours(erosion, 1, cv2.CHAIN_APPROX_SIMPLE)
     cv2.line(frame, (center_x, center_y-cross_size), (center_x, center_y+cross_size), (0, 0, 255), 1)
     cv2.line(frame, (center_x-cross_size, center_y), (center_x+cross_size, center_y), (0, 0, 255), 1)
-    
     if time.time() - start > 20:
         print("Setting LAND mode...")
         SetFixedText("Setting LAND mode...")
@@ -245,19 +253,28 @@ while True:
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
             print("X : "+str(cx)+" Y : "+str(cy))
+            #########################Roll 的 PID 控制#########################
             x_distance=center[0]-cx
-            if x_distance > 10 :
-                roll_angle = -5
-                print("Roll left")
-                WriteText(frame2, "Roll left", 2)
-            elif x_distance < -10 :
-                roll_angle = 5
-                print("Roll right")
-                WriteText(frame2, "Roll right", 2)
-            else:
-                pitch_angle = -5
-                print("Pitch Forward")
-                WriteText(frame2, "Pitch Forward", 2)
+            Error = x_distance
+            total_Err = total_Err +Error
+            output = -(Kp*Error + Ki*total_Err + Kd* (Error - last_Err))
+            last_Error = Error
+            u = output
+            roll_angle= u*0.2
+            if roll_angle > 15: roll_angle =15
+            if roll_angle < -15: roll_angle =-15
+            # if x_distance > 0 :
+            #     roll_angle = -5
+            #     print("Roll left")
+            #     WriteText(frame2, "Roll left", 2)
+            # elif x_distance < 0 :
+            #     roll_angle = 5
+            #     print("Roll right")
+            #     WriteText(frame2, "Roll right", 2)
+            # else:
+            #     pitch_angle = -5
+            #     print("Pitch Forward")
+            #     WriteText(frame2, "Pitch Forward", 2)
     #yaw調整(yaw_angle)1絕對調整
             if angle > 0 :
                 theta = 90 - angle
@@ -282,7 +299,11 @@ while True:
                 WriteText(frame2, "Pitch Forward", 5)
                 print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
                 WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            #########送出set_altitude 指令
+    #pitch(直走)觸發條件
+            if theta > -15 and theta <15 and x_distance>-30 and x_distance<30: pitch_angle = -5
+            else: pitch_angle = 0
+            
+            ###########################送出set_altitude 指令###########################
             set_attitude(pitch_angle = pitch_angle, yaw_angle = yaw_angle, roll_angle=roll_angle, thrust=0.5)
             
     else :
