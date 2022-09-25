@@ -235,56 +235,52 @@ while True:
                         cv2.LINE_AA)
 
         if M["m00"] !=0 :
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            print("X : "+str(cx)+" Y : "+str(cy))
-            x_distance=center[0]-cx
-            if x_distance > 10 :
-                print("Roll right")
-                WriteText(frame2, "Roll right", 2)
-                set_attitude(roll_angle = -5, thrust = 0.5,duration = 0.5)
-            if x_distance < -10 and cx > 40 :
-                print("Roll left")
-                WriteText(frame2, "Roll left", 2)
-                set_attitude(roll_angle = 5, thrust = 0.5,duration = 0.5)
-            else:
-                print("Pitch Forward")
-                WriteText(frame2, "Pitch Forward", 2)
-                set_attitude(pitch_angle = -5, thrust = 0.5,duration = 0.5)
-
-            
             cv2.circle(frame, (cx,cy), 5, (0,0,255), -1)
             #centroid line
             cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
             #BGR
             cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
             #distance = distanceCalculate(center, (cx,cy))
-        
+            cx = int(M['m10']/M['m00'])
+            cy = int(M['m01']/M['m00'])
+            print("X : "+str(cx)+" Y : "+str(cy))
+            x_distance=center[0]-cx
+            if x_distance > 10 :
+                roll_angle = -5
+                print("Roll left")
+                WriteText(frame2, "Roll left", 2)
+            elif x_distance < -10 :
+                roll_angle = 5
+                print("Roll right")
+                WriteText(frame2, "Roll right", 2)
+            else:
+                pitch_angle = -5
+                print("Pitch Forward")
+                WriteText(frame2, "Pitch Forward", 2)
     #yaw調整(yaw_angle)1絕對調整
-            # if angle > 0 :
-            #     theta = 90 - angle
-            #     set_attitude(yaw_angle=yawangle-theta)
-            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            #     print("set:"+str(yawangle-theta))
-            #     WriteText(frame2, "set:"+str(yawangle-theta), 3)
-            #     print("yaw right")
-            #     WriteText(frame2, "yaw right", 5)
-            # elif angle <= 0 :
-            #     theta = 90 + angle
-            #     set_attitude(yaw_angle=yawangle+theta)
-            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            #     print("set:"+str(yawangle+theta))
-            #     WriteText(frame2, "set:"+str(yawangle+theta), 3)
-            #     print("yaw left")
-            #     WriteText(frame2, "yaw left", 5)
-            # else :
-            #     print("Pitch Forward")
-            #     WriteText(frame2, "Pitch Forward", 5)
-            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            #     set_attitude(pitch_angle = -5, thrust = 0.5)
+            if angle > 0 :
+                theta = 90 - angle
+                yaw_angle = yawangle-theta
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+                print("set:"+str(yawangle-theta))
+                WriteText(frame2, "set:"+str(yawangle-theta), 3)
+                print("yaw right")
+                WriteText(frame2, "yaw right", 5)
+            elif angle <= 0 :
+                theta = 90 + angle
+                yaw_angle = yawangle+theta
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+                print("set:"+str(yawangle+theta))
+                WriteText(frame2, "set:"+str(yawangle+theta), 3)
+                print("yaw left")
+                WriteText(frame2, "yaw left", 5)
+            else :
+                print("Pitch Forward")
+                WriteText(frame2, "Pitch Forward", 5)
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
     #yaw調整(yaw_angle)2相對調整
             # if angle<85 & angle>0 :
             #     yawangle=yawangle+5
@@ -298,31 +294,33 @@ while True:
             #     print("Pitch Forward")
             #     set_attitude(pitch_angle = -5, thrust = 0.5)
     #yaw調整(yaw_rate)
-            if angle > 10 :
-                set_attitude(yaw_rate=5, use_yaw_rate = True, thrust=0.5)
-                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-                WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-                print("yaw right")
-                WriteText(frame2, "yaw right", 5)
-            elif angle <= -10 :
-                set_attitude(yaw_rate=-5, use_yaw_rate = True, thrust=0.5)
-                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-                WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-                print("yaw left")
-                WriteText(frame2, "yaw left", 5)
-            else :
-                print("yaw rate zero")
-                set_attitude(yaw_rate=0, use_yaw_rate = True, thrust=0.5)
-                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-                WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-                #set_attitude(pitch_angle = -5, thrust = 0.5)
+            # if angle > 10 :
+            #     set_attitude(yaw_rate=5, use_yaw_rate = True, thrust=0.5)
+            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+            #     print("yaw right")
+            #     WriteText(frame2, "yaw right", 5)
+            # elif angle <= -10 :
+            #     set_attitude(yaw_rate=-5, use_yaw_rate = True, thrust=0.5)
+            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+            #     print("yaw left")
+            #     WriteText(frame2, "yaw left", 5)
+            # else :
+            #     print("yaw rate zero")
+            #     set_attitude(yaw_rate=0, use_yaw_rate = True, thrust=0.5)
+            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+            #     #set_attitude(pitch_angle = -5, thrust = 0.5)
+            #########送出set_altitude 指令
+            set_attitude(pitch_angle = pitch_angle, yaw_angle = yaw_angle, roll_angle=roll_angle, thrust=0.5)
             
     else :
         print("I don't see the line")
         WriteText(frame2, "I don't see the line", 1)
     #cv2.drawContours(frame, c, -1, (0,255,0), 5)
-    cv2.imshow("Mask",remask)
-    cv2.imshow("Erosion",erosion)
+    #cv2.imshow("Mask",remask)
+    #cv2.imshow("Erosion",erosion)
     cv2.imshow("Frame",frame)
 
 
