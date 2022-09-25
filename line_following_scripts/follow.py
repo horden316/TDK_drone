@@ -282,37 +282,6 @@ while True:
                 WriteText(frame2, "Pitch Forward", 5)
                 print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
                 WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-    #yaw調整(yaw_angle)2相對調整
-            # if angle<85 & angle>0 :
-            #     yawangle=yawangle+5
-            #     set_attitude(yaw_angle=yawangle)
-            #     print("yaw right")
-            # elif angle>-85 & angle<0 :
-            #     yawangle=yawangle-5
-            #     set_attitude(yaw_angle=yawangle)
-            #     print("yaw left")
-            # else :
-            #     print("Pitch Forward")
-            #     set_attitude(pitch_angle = -5, thrust = 0.5)
-    #yaw調整(yaw_rate)
-            # if angle > 10 :
-            #     set_attitude(yaw_rate=5, use_yaw_rate = True, thrust=0.5)
-            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            #     print("yaw right")
-            #     WriteText(frame2, "yaw right", 5)
-            # elif angle <= -10 :
-            #     set_attitude(yaw_rate=-5, use_yaw_rate = True, thrust=0.5)
-            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            #     print("yaw left")
-            #     WriteText(frame2, "yaw left", 5)
-            # else :
-            #     print("yaw rate zero")
-            #     set_attitude(yaw_rate=0, use_yaw_rate = True, thrust=0.5)
-            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            #     #set_attitude(pitch_angle = -5, thrust = 0.5)
             #########送出set_altitude 指令
             set_attitude(pitch_angle = pitch_angle, yaw_angle = yaw_angle, roll_angle=roll_angle, thrust=0.5)
             
