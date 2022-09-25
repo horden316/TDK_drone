@@ -235,15 +235,15 @@ while True:
                         cv2.LINE_AA)
 
         if M["m00"] !=0 :
+            cx = int(M['m10']/M['m00'])
+            cy = int(M['m01']/M['m00'])
+            print("X : "+str(cx)+" Y : "+str(cy))
             cv2.circle(frame, (cx,cy), 5, (0,0,255), -1)
             #centroid line
             cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
             #BGR
             cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
             #distance = distanceCalculate(center, (cx,cy))
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            print("X : "+str(cx)+" Y : "+str(cy))
             x_distance=center[0]-cx
             if x_distance > 10 :
                 roll_angle = -5
@@ -281,6 +281,8 @@ while True:
                 WriteText(frame2, "Pitch Forward", 5)
                 print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
                 WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+            if theta > -15 and theta <15 and x_distance>-30 and x_distance<30: pitch_angle = -5
+            else: pitch_angle = 0
             #########送出set_altitude 指令
             set_attitude(pitch_angle = pitch_angle, yaw_angle = yaw_angle, roll_angle=roll_angle, thrust=0.5)
             
