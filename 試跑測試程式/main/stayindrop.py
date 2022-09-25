@@ -190,80 +190,96 @@ def distanceCalculate(p1, p2):
     dis = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
     return dis
 
+##變數
+aTargetAltitude = 0.6
+limit_time =10
+thrust = 0.52
 ##############主程式##############
 time.sleep(2)
+arm()
 print("takeoff")
 yawangle=math.degrees(vehicle.attitude.yaw)
-arm_and_takeoff_nogps(aTargetAltitude=0.6,DEFAULT_TAKEOFF_THRUST = 0.52,SMOOTH_TAKEOFF_THRUST = 0.51,limit_time=8,default_yaw=True)
-set_attitude(yaw_angle=yawangle,thrust = 0.5,duration=2)
+# arm_and_takeoff_nogps(aTargetAltitude=0.6,DEFAULT_TAKEOFF_THRUST = 0.52,SMOOTH_TAKEOFF_THRUST = 0.51,limit_time=8,default_yaw=True)
+# set_attitude(yaw_angle=yawangle,thrust = 0.5,duration=2)
 start=time.time()
 while True:
-    if time.time() - start > 20:
-        print("Setting LAND mode...")
-        SetFixedText("Setting LAND mode...")
-        vehicle.mode = VehicleMode("LAND")
-        time.sleep(1)
-        break
-    _, frame = cap.read()
-    frame2=np.zeros((blank_height, blank_width,3),np.uint8)
-    hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
-    kernal = np.ones((5, 5), "uint8")
-    blue_mask = cv2.dilate(blue_mask, kernal)
-    blue_mask = cv2.bitwise_not(blue_mask)
-    gray_blurred = cv2.blur(blue_mask, (3, 3))
-    # cv2.imshow("gray_blurred", gray_blurred)
-    # cv2.imshow("blue_mask", blue_mask)
-    # Apply Hough transform on the blurred image.
-    detected_circles = cv2.HoughCircles(gray_blurred, 
-                    cv2.HOUGH_GRADIENT, 1, 20, param1 = 100,
-                param2 = 20, minRadius = 30, maxRadius = 80)
-    
-    if detected_circles is not None:
-    
-        # Convert the circle parameters a, b and r to integers.
-        detected_circles = np.uint16(np.around(detected_circles))
-    
-        for pt in detected_circles[0, :]:
-            a, b, r = pt[0], pt[1], pt[2]
-    
-            # Draw the circumference of the circle.
-            cv2.circle(frame, (a, b), r, (0, 255, 0), 2)
-            # Draw a small circle (of radius 1) to show the center.
-            cv2.circle(frame, (a, b), 1, (0, 0, 255), 3)
-            # cv2.imshow("Detected Circle", img)
-
-            x_distance=center[0]-a
-            y_distance=center[1]-b
-            if x_distance > 10 :
-                print("Roll left")
-                set_attitude(roll_angle = -5, thrust = 0.5, duration = 0.5)
-            elif x_distance < -10 :
-                print("Roll right")
-                set_attitude(roll_angle = 5, thrust = 0.5, duration = 0.5)
-            elif y_distance > 10 :
-                print("pitch forward")
-                set_attitude(pitch_angle = -5, thrust = 0.5, duration = 0.5)
-            elif y_distance < -10 :
-                print("pitch backward")
-                set_attitude(pitch_angle = 5, thrust = 0.5, duration = 0.5)
-            else:
-                print("stay")
-                set_attitude(pitch_angle = 0, thrust = 0.5, duration = 0.5)
+            current_altitude = vehicle.rangefinder.distance
+            print(" Altitude: %f  Desired: %f" %
+                (current_altitude, aTargetAltitude))
+            if time.time() - start > limit_time:
+                print("take off timeout")
+                print("change mode to landing")
+                vehicle.mode = VehicleMode("LAND")
+                time.sleep(1)
+                while True:
+                    time.sleep(1)
+                    print("vehicle emergency landing: open controller")
+            if current_altitude >= aTargetAltitude: # Trigger just below target alt.
+                print("Reached target altitude")
+                thrust = 0.5
+            time.sleep(0.2)
+            _, frame = cap.read()
+            frame2=np.zeros((blank_height, blank_width,3),np.uint8)
+            hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+            blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
+            kernal = np.ones((5, 5), "uint8")
+            blue_mask = cv2.dilate(blue_mask, kernal)
+            blue_mask = cv2.bitwise_not(blue_mask)
+            gray_blurred = cv2.blur(blue_mask, (3, 3))
+            # cv2.imshow("gray_blurred", gray_blurred)
+            # cv2.imshow("blue_mask", blue_mask)
+            # Apply Hough transform on the blurred image.
+            detected_circles = cv2.HoughCircles(gray_blurred, 
+                            cv2.HOUGH_GRADIENT, 1, 20, param1 = 100,
+                        param2 = 20, minRadius = 30, maxRadius = 80)
             
-    h,w,_ = frame.shape
-    frame2[0:h, 0:w] = frame
-    cv2.imshow("frame2", frame2)
+            if detected_circles is not None:
+            
+                # Convert the circle parameters a, b and r to integers.
+                detected_circles = np.uint16(np.around(detected_circles))
+            
+                for pt in detected_circles[0, :]:
+                    a, b, r = pt[0], pt[1], pt[2]
+            
+                    # Draw the circumference of the circle.
+                    cv2.circle(frame, (a, b), r, (0, 255, 0), 2)
+                    # Draw a small circle (of radius 1) to show the center.
+                    cv2.circle(frame, (a, b), 1, (0, 0, 255), 3)
+                    # cv2.imshow("Detected Circle", img)
 
-    WriteFixedText(frame2)
+                    x_distance=center[0]-a
+                    y_distance=center[1]-b
+                    if x_distance > 10 :
+                        print("Roll left")
+                        set_attitude(yaw_angle=yawangle, roll_angle = -5, thrust = thrust, duration = 0.5)
+                    elif x_distance < -10 :
+                        print("Roll right")
+                        set_attitude(ryaw_angle=yawangle, oll_angle = 5, thrust = thrust, duration = 0.5)
+                    elif y_distance > 10 :
+                        print("pitch forward")
+                        set_attitude(yaw_angle=yawangle, pitch_angle = -5, thrust = thrust, duration = 0.5)
+                    elif y_distance < -10 :
+                        print("pitch backward")
+                        set_attitude(yaw_angle=yawangle, pitch_angle = 5, thrust = thrust, duration = 0.5)
+                    else:
+                        print("stay")
+                        set_attitude(yaw_angle=yawangle, pitch_angle = 0, thrust = thrust, duration = 0.5)
+                    
+            h,w,_ = frame.shape
+            frame2[0:h, 0:w] = frame
+            cv2.imshow("frame2", frame2)
 
-    out.write(frame2)
+            WriteFixedText(frame2)
 
-    if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
-        print("Setting LAND mode...")
-        SetFixedText("Setting LAND mode...")
-        vehicle.mode = VehicleMode("LAND")
-        break
+            out.write(frame2)
+
+            if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
+                print("Setting LAND mode...")
+                SetFixedText("Setting LAND mode...")
+                vehicle.mode = VehicleMode("LAND")
+                break
+
+    
 print("Close vehicle object")
 vehicle.close()
 print('mission complete')
