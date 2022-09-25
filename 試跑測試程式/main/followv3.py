@@ -313,14 +313,14 @@ while True:
             #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
             #     #set_attitude(pitch_angle = -5, thrust = 0.5)
             #########送出set_altitude 指令
-            set_attitude(pitch_angle = pitch_angle, yaw_angle = yaw_angle, thrust=0.5)
+            set_attitude(pitch_angle = pitch_angle, yaw_angle = yaw_angle, roll_angle=roll_angle, thrust=0.5)
             
     else :
         print("I don't see the line")
         WriteText(frame2, "I don't see the line", 1)
     #cv2.drawContours(frame, c, -1, (0,255,0), 5)
-    # cv2.imshow("Mask",remask)
-    # cv2.imshow("Erosion",erosion)
+    #cv2.imshow("Mask",remask)
+    #cv2.imshow("Erosion",erosion)
     cv2.imshow("Frame",frame)
 
 
