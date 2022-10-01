@@ -11,7 +11,7 @@ FixedText_array=[]
 
 #VideoWriter
 fourcc = cv2.VideoWriter_fourcc(*'XVID') #指定影像編碼方式
-out = cv2.VideoWriter('output.avi', fourcc, 20.0, (480,  360))
+out = cv2.VideoWriter("output"+str(int(time.time()))+".avi", fourcc, 20.0, (480,  360))
 
 #建立空frame2
 blank_width=480
