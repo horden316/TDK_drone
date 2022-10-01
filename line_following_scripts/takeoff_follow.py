@@ -39,7 +39,7 @@ limit_time = 10
 def WriteText(frame2, text, seq): #(frame,文字,第幾個)
     Y_offset=0
     font_gap_px=20
-    
+
     font_start_Y_px = seq*font_gap_px
     cv2.putText(frame2, text, (0, Y+Y_offset+font_start_Y_px), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
 
@@ -56,7 +56,7 @@ def WriteFixedText(frame2): #(frame,文字,第幾個)
 
     global SetFixedText_seq
     global FixedText_array
-    
+
     #font_start_Y_px = SetFixedText_seq*font_gap_px
     for i in range (len(FixedText_array)):
         cv2.putText(frame2, FixedText_array[i], (X+X_offset,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
@@ -138,7 +138,7 @@ def set_attitude(roll_angle = 0.0, pitch_angle = 0.0,
                              yaw_angle, yaw_rate, False,
                              thrust)
         time.sleep(0.1)
-        
+
     # Reset attitude, or it will persist for 1s more due to the timeout
     send_attitude_target(0, 0,
                          0, 0, True,
@@ -154,7 +154,7 @@ print("Arming motors")
 vehicle.mode = VehicleMode("GUIDED_NOGPS")
 vehicle.armed = True
 
-    
+
 while not vehicle.armed:
     print(" Waiting for arming...")
     vehicle.armed = True
@@ -199,7 +199,7 @@ while True:
     set_attitude(thrust = DEFAULT_TAKEOFF_THRUST)
 
     ret, frame = cap.read()
-    
+
     low_b = np.uint8([255,255,255])
     high_b = np.uint8([50,50,50])
     mask = cv2.inRange(frame, high_b, low_b)
@@ -255,7 +255,7 @@ while True:
                 WriteText(frame2, "Pitch Forward", 2)
                 set_attitude(pitch_angle = 0, thrust = DEFAULT_TAKEOFF_THRUST)
 
-            
+
             cv2.circle(frame, (cx,cy), 5, (0,0,255), -1)
             #centroid line
             cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
@@ -264,7 +264,7 @@ while True:
             #distance = distanceCalculate(center, (cx,cy))
             cv2.putText(frame, "x_distance: " + str(x_distance), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                         cv2.LINE_AA)
-        
+
 
         if angle > 0 :
             theta = 90 - angle
@@ -290,11 +290,11 @@ while True:
             print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
             WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
             set_attitude(pitch_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
-    
-    if current_altitude < aTargetAltitude :
+
+    if current_altitude >= aTargetAltitude :
         DEFAULT_TAKEOFF_THRUST=0.5
-        
-            
+
+
     else :
         print("I don't see the line")
         WriteText(frame2, "I don't see the line", 1)
