@@ -1,27 +1,28 @@
 import cv2
 import numpy as np
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
-from pymavlink import mavutil # Needed for command message definitions
+from pymavlink import mavutil  # Needed for command message definitions
 import time
 import math
 
-#log全域變數準備
-SetFixedText_seq=0
-FixedText_array=[]
+# log全域變數準備
+SetFixedText_seq = 0
+FixedText_array = []
 
-#VideoWriter
-fourcc = cv2.VideoWriter_fourcc(*'XVID') #指定影像編碼方式
-out = cv2.VideoWriter("output"+str(int(time.time()))+".avi", fourcc, 20.0, (480,  360))
+# VideoWriter
+fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 指定影像編碼方式
+out = cv2.VideoWriter("output"+str(int(time.time())) +
+                      ".avi", fourcc, 20.0, (480,  360))
 
-#建立空frame2
-blank_width=480
-blank_height=360
+# 建立空frame2
+blank_width = 480
+blank_height = 360
 
 
-#screen resolution
-X=160
-Y=120
-center =  (int(X/2),int(Y/2))
+# screen resolution
+X = 160
+Y = 120
+center = (int(X/2), int(Y/2))
 center_x = int(X/2)
 center_y = int(Y/2)
 cross_size = 5
@@ -36,12 +37,15 @@ DEFAULT_TAKEOFF_THRUST = 0.55
 aTargetAltitude = 0.6
 limit_time = 10
 
-def WriteText(frame2, text, seq): #(frame,文字,第幾個)
-    Y_offset=0
-    font_gap_px=20
+
+def WriteText(frame2, text, seq):  # (frame,文字,第幾個)
+    Y_offset = 0
+    font_gap_px = 20
 
     font_start_Y_px = seq*font_gap_px
-    cv2.putText(frame2, text, (0, Y+Y_offset+font_start_Y_px), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
+    cv2.putText(frame2, text, (0, Y+Y_offset+font_start_Y_px),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
+
 
 def SetFixedText(text):
     global SetFixedText_seq
@@ -50,16 +54,19 @@ def SetFixedText(text):
     FixedText_array.append(text)
     SetFixedText_seq = SetFixedText_seq+1
 
-def WriteFixedText(frame2): #(frame,文字,第幾個)
-    X_offset=0
-    #font_gap_px=20
+
+def WriteFixedText(frame2):  # (frame,文字,第幾個)
+    X_offset = 0
+    # font_gap_px=20
 
     global SetFixedText_seq
     global FixedText_array
 
     #font_start_Y_px = SetFixedText_seq*font_gap_px
-    for i in range (len(FixedText_array)):
-        cv2.putText(frame2, FixedText_array[i], (X+X_offset,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
+    for i in range(len(FixedText_array)):
+        cv2.putText(frame2, FixedText_array[i], (X+X_offset, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
+
 
 def arm():
     print("Basic pre-arm checks")
@@ -71,9 +78,10 @@ def arm():
         time.sleep(1)
     print("armed")
 
-def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
-                         yaw_angle = None, yaw_rate = 0.0, use_yaw_rate = False,
-                         thrust = 0.5):
+
+def send_attitude_target(roll_angle=0.0, pitch_angle=0.0,
+                         yaw_angle=None, yaw_rate=0.0, use_yaw_rate=False,
+                         thrust=0.5):
     """
     use_yaw_rate: the yaw can be controlled using yaw_angle OR yaw_rate.
                   When one is used, the other is ignored by Ardupilot.
@@ -88,19 +96,20 @@ def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
     # Thrust == 0.5: Hold the altitude
     # Thrust <  0.5: Descend
     msg = vehicle.message_factory.set_attitude_target_encode(
-        0, # time_boot_ms
-        1, # Target system
-        1, # Target component
+        0,  # time_boot_ms
+        1,  # Target system
+        1,  # Target component
         0b00000000 if use_yaw_rate else 0b00000100,
-        to_quaternion(roll_angle, pitch_angle, yaw_angle), # Quaternion
-        0, # Body roll rate in radian
-        0, # Body pitch rate in radian
-        math.radians(yaw_rate), # Body yaw rate in radian/second
+        to_quaternion(roll_angle, pitch_angle, yaw_angle),  # Quaternion
+        0,  # Body roll rate in radian
+        0,  # Body pitch rate in radian
+        math.radians(yaw_rate),  # Body yaw rate in radian/second
         thrust  # Thrust
     )
     vehicle.send_mavlink(msg)
 
-def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
+
+def to_quaternion(roll=0.0, pitch=0.0, yaw=0.0):
     """
     Convert degrees to quaternions
     """
@@ -118,9 +127,10 @@ def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
 
     return [w, x, y, z]
 
-def set_attitude(roll_angle = 0.0, pitch_angle = 0.0,
-                 yaw_angle = None, yaw_rate = 0.0, use_yaw_rate = False,
-                 thrust = 0.5, duration = 0):
+
+def set_attitude(roll_angle=0.0, pitch_angle=0.0,
+                 yaw_angle=None, yaw_rate=0.0, use_yaw_rate=False,
+                 thrust=0.5, duration=0):
     """
     Note that from AC3.3 the message should be re-sent more often than every
     second, as an ATTITUDE_TARGET order has a timeout of 1s.
@@ -147,7 +157,7 @@ def set_attitude(roll_angle = 0.0, pitch_angle = 0.0,
 
 ##############主程式##############
 
-yawangle=math.degrees(vehicle.attitude.yaw)
+yawangle = math.degrees(vehicle.attitude.yaw)
 
 print("Arming motors")
 # Copter should arm in GUIDED_NOGPS mode
@@ -168,16 +178,16 @@ current_altitude = vehicle.rangefinder.distance
 start = time.time()
 RefreshTime = time.time()
 
-#Takeoff
+# Takeoff
 while True:
-    frame2=np.zeros((blank_height, blank_width,3),np.uint8)
+    frame2 = np.zeros((blank_height, blank_width, 3), np.uint8)
 
     if(time.time()-RefreshTime > 0.2):
-        RefreshTime=time.time()
+        RefreshTime = time.time()
         current_altitude = vehicle.rangefinder.distance
 
     print(" Altitude: %f  Desired: %f" %
-              (current_altitude, aTargetAltitude))
+          (current_altitude, aTargetAltitude))
     WriteText(frame2, " Altitude: %f  Desired: %f" %
               (current_altitude, aTargetAltitude), 1)
 
@@ -191,35 +201,37 @@ while True:
             time.sleep(1)
             print("vehicle emergency landing: open controller")
             WriteText(frame2, "vehicle emergency landing: open controller", 1)
-    if current_altitude >= aTargetAltitude: # Trigger just below target alt.
+    if current_altitude >= aTargetAltitude:  # Trigger just below target alt.
         print("Reached target altitude")
         SetFixedText("Reached target altitude")
         break
 
-    set_attitude(thrust = DEFAULT_TAKEOFF_THRUST)
+    set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
 
     ret, frame = cap.read()
 
-    low_b = np.uint8([255,255,255])
-    high_b = np.uint8([50,50,50])
+    low_b = np.uint8([255, 255, 255])
+    high_b = np.uint8([50, 50, 50])
     mask = cv2.inRange(frame, high_b, low_b)
     remask = cv2.bitwise_not(mask)
 
-    #apply erosion
-    kernel = np.ones((3,3), np.uint8)
-    erosion = cv2.erode(remask, kernel, iterations = 1)
+    # apply erosion
+    kernel = np.ones((3, 3), np.uint8)
+    erosion = cv2.erode(remask, kernel, iterations=1)
 
     contours, hierarchy = cv2.findContours(erosion, 1, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.line(frame, (center_x, center_y-cross_size), (center_x, center_y+cross_size), (0, 0, 255), 1)
-    cv2.line(frame, (center_x-cross_size, center_y), (center_x+cross_size, center_y), (0, 0, 255), 1)
-    start=time.time()
+    cv2.line(frame, (center_x, center_y-cross_size),
+             (center_x, center_y+cross_size), (0, 0, 255), 1)
+    cv2.line(frame, (center_x-cross_size, center_y),
+             (center_x+cross_size, center_y), (0, 0, 255), 1)
+    start = time.time()
     if time.time() - start > 20:
         print("Setting LAND mode...")
         SetFixedText("Setting LAND mode...")
         vehicle.mode = VehicleMode("LAND")
         time.sleep(1)
         break
-    if len(contours) > 0 :
+    if len(contours) > 0:
         c = max(contours, key=cv2.contourArea)
         M = cv2.moments(c)
         blackbox = cv2.minAreaRect(c)
@@ -235,37 +247,36 @@ while True:
             angle = 90 + angle
         print("Angle:" + str(angle))
         cv2.putText(frame, "Angle: " + str(angle), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
-                        cv2.LINE_AA)
+                    cv2.LINE_AA)
 
-        if M["m00"] !=0 :
+        if M["m00"] != 0:
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
             print("X : "+str(cx)+" Y : "+str(cy))
-            x_distance=center[0]-cx
-            if x_distance > 10 :
+            x_distance = center[0]-cx
+            if x_distance > 10:
                 print("Roll right")
                 WriteText(frame2, "Roll right", 2)
-                set_attitude(roll_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
-            elif x_distance < -10 and cx > 40 :
+                set_attitude(roll_angle=-5, thrust=DEFAULT_TAKEOFF_THRUST)
+            elif x_distance < -10 and cx > 40:
                 print("Roll left")
                 WriteText(frame2, "Roll left", 2)
-                set_attitude(roll_angle = 5, thrust = DEFAULT_TAKEOFF_THRUST)
+                set_attitude(roll_angle=5, thrust=DEFAULT_TAKEOFF_THRUST)
             else:
                 print("Pitch Forward")
                 WriteText(frame2, "Pitch Forward", 2)
-                set_attitude(pitch_angle = 0, thrust = DEFAULT_TAKEOFF_THRUST)
+                set_attitude(pitch_angle=0, thrust=DEFAULT_TAKEOFF_THRUST)
 
-
-            cv2.circle(frame, (cx,cy), 5, (0,0,255), -1)
-            #centroid line
-            cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
-            #BGR
-            cv2.line(frame,  center, (cx,cy), (0,255,255), 1)
+            cv2.circle(frame, (cx, cy), 5, (0, 0, 255), -1)
+            # centroid line
+            cv2.line(frame,  center, (cx, cy), (0, 255, 255), 1)
+            # BGR
+            cv2.line(frame,  center, (cx, cy), (0, 255, 255), 1)
             #distance = distanceCalculate(center, (cx,cy))
             cv2.putText(frame, "x_distance: " + str(x_distance), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                         cv2.LINE_AA)
 
-
+        '''
         if angle > 0 :
             theta = 90 - angle
             set_attitude(yaw_angle=yawangle-theta, thrust = DEFAULT_TAKEOFF_THRUST)
@@ -290,20 +301,19 @@ while True:
             print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
             WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
             set_attitude(pitch_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
+        '''
+    if current_altitude >= aTargetAltitude:
+        DEFAULT_TAKEOFF_THRUST = 0.5
 
-    if current_altitude >= aTargetAltitude :
-        DEFAULT_TAKEOFF_THRUST=0.5
-
-
-    else :
+    else:
         print("I don't see the line")
         WriteText(frame2, "I don't see the line", 1)
     #cv2.drawContours(frame, c, -1, (0,255,0), 5)
-    #cv2.imshow("Mask",remask)
-    #cv2.imshow("Erosion",erosion)
-    #cv2.imshow("Frame",frame)
+    # cv2.imshow("Mask",remask)
+    # cv2.imshow("Erosion",erosion)
+    # cv2.imshow("Frame",frame)
 
-    h,w,_ = frame.shape
+    h, w, _ = frame.shape
     frame2[0:h, 0:w] = frame
     cv2.imshow("frame2", frame2)
 
@@ -319,13 +329,11 @@ while True:
 
 
 print("Reached target altitude")
-set_attitude(thrust = 0.5)
+set_attitude(thrust=0.5)
 print("Setting LAND mode...")
 
 
 vehicle.mode = VehicleMode("LAND")
-
-
 
 
 print("Close vehicle object")
