@@ -36,6 +36,8 @@ vehicle = connect(connection_string, wait_ready=True, baud=115200)
 DEFAULT_TAKEOFF_THRUST = 0.55
 aTargetAltitude = 0.6
 limit_time = 10
+hold_time = 2664609484
+Reached_target = False
 
 
 def WriteText(frame2, text, seq):  # (frame,文字,第幾個)
@@ -201,9 +203,16 @@ while True:
             time.sleep(1)
             print("vehicle emergency landing: open controller")
             WriteText(frame2, "vehicle emergency landing: open controller", 1)
-    if current_altitude >= aTargetAltitude:  # Trigger just below target alt.
+    # Trigger just below target alt.
+    if current_altitude >= aTargetAltitude and Reached_target == False:
         print("Reached target altitude")
         SetFixedText("Reached target altitude")
+        DEFAULT_TAKEOFF_THRUST = 0.5
+        Reached_target = True
+        hold_time = time.time()
+        # break
+
+    if time.time() - hold_time > 5:
         break
 
     set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
@@ -255,13 +264,14 @@ while True:
             print("X : "+str(cx)+" Y : "+str(cy))
             x_distance = center[0]-cx
             if x_distance > 10:
-                print("Roll right")
-                WriteText(frame2, "Roll right", 2)
-                set_attitude(roll_angle=-5, thrust=DEFAULT_TAKEOFF_THRUST)
-            elif x_distance < -10 and cx > 40:
                 print("Roll left")
                 WriteText(frame2, "Roll left", 2)
-                set_attitude(roll_angle=5, thrust=DEFAULT_TAKEOFF_THRUST)
+                set_attitude(roll_angle=-7, thrust=DEFAULT_TAKEOFF_THRUST)
+
+            elif x_distance < -10 and cx > 40:
+                print("Roll right")
+                WriteText(frame2, "Roll right", 2)
+                set_attitude(roll_angle=7, thrust=DEFAULT_TAKEOFF_THRUST)
             else:
                 print("Pitch Forward")
                 WriteText(frame2, "Pitch Forward", 2)
