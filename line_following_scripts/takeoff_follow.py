@@ -214,13 +214,14 @@ while True:
             time.sleep(1)
             print("vehicle emergency landing: open controller")
             WriteText(frame2, "vehicle emergency landing: open controller", 1)
-    if current_altitude >= aTargetAltitude:  # Trigger just below target alt.
+    if current_altitude >= aTargetAltitude and Reached_target == False:
         print("Reached target altitude")
         SetFixedText("Reached target altitude")
-        break
-
+        DEFAULT_TAKEOFF_THRUST = 0.5
+        Reached_target = True
+        hold_time = time.time()
+        # break
     set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
-
     ret, frame = cap.read()
 
     low_b = np.uint8([255, 255, 255])
@@ -320,10 +321,7 @@ while True:
         #     set_attitude(pitch_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
         ###########################送出set_altitude 指令###########################
         set_attitude(pitch_angle=pitch_angle, yaw_angle=yawangle,
-                     roll_angle=roll_angle, thrust=0.5)
-    if current_altitude < aTargetAltitude:
-        DEFAULT_TAKEOFF_THRUST = 0.5
-
+                     roll_angle=roll_angle, thrust=DEFAULT_TAKEOFF_THRUST)
     else:
         print("I don't see the line")
         WriteText(frame2, "I don't see the line", 1)
