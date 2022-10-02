@@ -255,12 +255,12 @@ while True:
             print("X : "+str(cx)+" Y : "+str(cy))
             x_distance = center[0]-cx
             if x_distance > 10:
-                print("Roll right")
-                WriteText(frame2, "Roll right", 2)
-                set_attitude(roll_angle=-5, thrust=DEFAULT_TAKEOFF_THRUST)
-            elif x_distance < -10 and cx > 40:
                 print("Roll left")
                 WriteText(frame2, "Roll left", 2)
+                set_attitude(roll_angle=-5, thrust=DEFAULT_TAKEOFF_THRUST)
+            elif x_distance < -10 and cx > 40:
+                print("Roll right")
+                WriteText(frame2, "Roll right", 2)
                 set_attitude(roll_angle=5, thrust=DEFAULT_TAKEOFF_THRUST)
             else:
                 print("Pitch Forward")
