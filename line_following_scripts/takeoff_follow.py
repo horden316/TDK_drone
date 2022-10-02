@@ -18,7 +18,14 @@ out = cv2.VideoWriter("output"+str(int(time.time())) +
 # 建立空frame2
 blank_width = 480
 blank_height = 360
-
+# PID variables
+Kp = 0.8
+Ki = 0
+Kd = 0
+Target_value = 0
+last_Err = 0
+total_Err = 0
+output = 0
 
 # screen resolution
 X = 160
@@ -269,10 +276,16 @@ while True:
             print("X : "+str(cx)+" Y : "+str(cy))
             x_distance = center[0]-cx
             y_distance = center[1]-cy
-            roll_angle = PID(Error=x_distance, Kp=0.8, Ki=0,
-                             Kd=0, max_angle=15, a=0.2)
-            pitch_angle = PID(Error=y_distance, Kp=0.8, Ki=0,
-                              Kd=0, max_angle=15, a=0.2)
+            Error = x_distance
+            total_Err = total_Err + Error
+            output = -(Kp*Error + Ki*total_Err + Kd * (Error - last_Err))
+            last_Error = Error
+            u = output
+            roll_angle = u*0.2
+            if roll_angle > 15:
+                roll_angle = 15
+            if roll_angle < -15:
+                roll_angle = -15
             # if x_distance > 10 :
             #     print("Roll right")
             #     WriteText(frame2, "Roll right", 2)
@@ -320,7 +333,7 @@ while True:
         #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
         #     set_attitude(pitch_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
         ###########################送出set_altitude 指令###########################
-        set_attitude(pitch_angle=pitch_angle, yaw_angle=yawangle,
+        set_attitude(pitch_angle=0, yaw_angle=yawangle,
                      roll_angle=roll_angle, thrust=DEFAULT_TAKEOFF_THRUST)
     else:
         print("I don't see the line")
