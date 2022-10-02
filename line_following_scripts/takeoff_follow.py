@@ -231,7 +231,7 @@ while True:
         Reached_target = True
         hold_time = time.time()
         # break
-    set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
+    # set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
     ret, frame = cap.read()
 
     low_b = np.uint8([255, 255, 255])
@@ -338,15 +338,21 @@ while True:
         #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
         #     set_attitude(pitch_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
         ###########################送出set_altitude 指令###########################
-        set_attitude(pitch_angle=0, yaw_angle=yawangle,
-                     roll_angle=roll_angle, thrust=DEFAULT_TAKEOFF_THRUST)
+
     else:
         print("I don't see the line")
         WriteText(frame2, "I don't see the line", 1)
+        rollangle = 0
     #cv2.drawContours(frame, c, -1, (0,255,0), 5)
     # cv2.imshow("Mask",remask)
     # cv2.imshow("Erosion",erosion)
     # cv2.imshow("Frame",frame)
+
+    if time.time() - start > 5:
+        set_attitude(pitch_angle=0, yaw_angle=yawangle,
+                     roll_angle=rollangle, thrust=DEFAULT_TAKEOFF_THRUST)
+    else:
+        set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
 
     h, w, _ = frame.shape
     frame2[0:h, 0:w] = frame
@@ -362,13 +368,15 @@ while True:
         time.sleep(20)
         break
 
-
+startLANDtime = time.time()
 print("Reached target altitude")
-set_attitude(thrust=0.5)
+set_attitude(thrust=0.5, duration=2)
 print("Setting LAND mode...")
 
-
-vehicle.mode = VehicleMode("LAND")
+while True:
+    if time.time() - startLANDtime > 2:
+        vehicle.mode = VehicleMode("LAND")
+        break
 
 
 print("Close vehicle object")
