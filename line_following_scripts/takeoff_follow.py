@@ -307,6 +307,8 @@ while True:
             #distance = distanceCalculate(center, (cx,cy))
             cv2.putText(frame, "x_distance: " + str(x_distance), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                         cv2.LINE_AA)
+            cv2.putText(frame, "roll: " + str(roll_angle), (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
+                        cv2.LINE_AA)
 
         # if angle > 0 :
         #     theta = 90 - angle
