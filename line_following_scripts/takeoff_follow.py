@@ -41,9 +41,11 @@ connection_string = '/dev/ttyACM0'
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=115200)
 
-DEFAULT_TAKEOFF_THRUST = 0.55
+DEFAULT_TAKEOFF_THRUST = 0.52
 aTargetAltitude = 0.6
-limit_time = 10
+limit_time = 12
+hold_time = 2664609484
+Reached_target = False
 
 
 def WriteText(frame2, text, seq):  # (frame,文字,第幾個)
