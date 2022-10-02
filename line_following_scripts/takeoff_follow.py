@@ -248,7 +248,7 @@ while True:
              (center_x, center_y+cross_size), (0, 0, 255), 1)
     cv2.line(frame, (center_x-cross_size, center_y),
              (center_x+cross_size, center_y), (0, 0, 255), 1)
-    start = time.time()
+    #start = time.time()
     if time.time() - start > 20:
         print("Setting LAND mode...")
         SetFixedText("Setting LAND mode...")
