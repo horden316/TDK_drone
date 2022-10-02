@@ -263,18 +263,6 @@ while True:
             roll_angle= u*0.2
             if roll_angle > 15: roll_angle =15
             if roll_angle < -15: roll_angle =-15
-            # if x_distance > 0 :
-            #     roll_angle = -5
-            #     print("Roll left")
-            #     WriteText(frame2, "Roll left", 2)
-            # elif x_distance < 0 :
-            #     roll_angle = 5
-            #     print("Roll right")
-            #     WriteText(frame2, "Roll right", 2)
-            # else:
-            #     pitch_angle = -5
-            #     print("Pitch Forward")
-            #     WriteText(frame2, "Pitch Forward", 2)
     #yaw調整(yaw_angle)1絕對調整
             if angle > 0 :
                 theta = 90 - angle
