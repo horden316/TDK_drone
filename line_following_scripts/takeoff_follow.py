@@ -159,10 +159,11 @@ def set_attitude(roll_angle=0.0, pitch_angle=0.0,
                              thrust)
         time.sleep(0.1)
 
+    # 原本在這裡有的是我們把它註解掉的
     # Reset attitude, or it will persist for 1s more due to the timeout
-    send_attitude_target(0, 0,
-                         0, 0, True,
-                         thrust)
+    # send_attitude_target(0, 0,
+    #                      0, 0, True,
+    #                      thrust)
 
 
 def PID(Error=0, Kp=0.8, Ki=0, Kd=0, max_angle=15, a=0.2):
