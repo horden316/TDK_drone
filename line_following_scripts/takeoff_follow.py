@@ -200,7 +200,7 @@ current_altitude = vehicle.rangefinder.distance
 
 start = time.time()
 RefreshTime = time.time()
-
+rollangle = 0
 # Takeoff
 while True:
     frame2 = np.zeros((blank_height, blank_width, 3), np.uint8)
