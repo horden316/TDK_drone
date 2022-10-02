@@ -1,3 +1,4 @@
+#1002 with PID
 import cv2
 import numpy as np
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
@@ -143,7 +144,14 @@ def set_attitude(roll_angle = 0.0, pitch_angle = 0.0,
     send_attitude_target(0, 0,
                          0, 0, True,
                          thrust)
-
+def PID(Error = 0, Kp=0.8, Ki=0, Kd=0,max_angle=15,a=0.2):
+    total_Err = total_Err +Error
+    output = -(Kp*Error + Ki*total_Err + Kd* (Error - last_Err))
+    last_Err = Error
+    pid_angle = output*a
+    if pid_angle > max_angle: pid_angle =max_angle
+    if pid_angle < -max_angle: pid_angle =-max_angle
+    return pid_angle
 
 ##############主程式##############
 
@@ -242,18 +250,21 @@ while True:
             cy = int(M['m01']/M['m00'])
             print("X : "+str(cx)+" Y : "+str(cy))
             x_distance=center[0]-cx
-            if x_distance > 10 :
-                print("Roll right")
-                WriteText(frame2, "Roll right", 2)
-                set_attitude(roll_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
-            elif x_distance < -10 and cx > 40 :
-                print("Roll left")
-                WriteText(frame2, "Roll left", 2)
-                set_attitude(roll_angle = 5, thrust = DEFAULT_TAKEOFF_THRUST)
-            else:
-                print("Pitch Forward")
-                WriteText(frame2, "Pitch Forward", 2)
-                set_attitude(pitch_angle = 0, thrust = DEFAULT_TAKEOFF_THRUST)
+            y_distance=center[1]-cy
+            roll_angle=PID(Error = x_distance, Kp=0.8, Ki=0, Kd=0,max_angle=15,a=0.2)
+            pitch_angle=PID(Error = y_distance, Kp=0.8, Ki=0, Kd=0,max_angle=15,a=0.2)
+            # if x_distance > 10 :
+            #     print("Roll right")
+            #     WriteText(frame2, "Roll right", 2)
+            #     set_attitude(roll_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
+            # elif x_distance < -10 and cx > 40 :
+            #     print("Roll left")
+            #     WriteText(frame2, "Roll left", 2)
+            #     set_attitude(roll_angle = 5, thrust = DEFAULT_TAKEOFF_THRUST)
+            # else:
+            #     print("Pitch Forward")
+            #     WriteText(frame2, "Pitch Forward", 2)
+            #     set_attitude(pitch_angle = 0, thrust = DEFAULT_TAKEOFF_THRUST)
 
             
             cv2.circle(frame, (cx,cy), 5, (0,0,255), -1)
@@ -266,31 +277,32 @@ while True:
                         cv2.LINE_AA)
         
 
-        if angle > 0 :
-            theta = 90 - angle
-            set_attitude(yaw_angle=yawangle-theta, thrust = DEFAULT_TAKEOFF_THRUST)
-            print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            print("set:"+str(yawangle-theta))
-            WriteText(frame2, "set:"+str(yawangle-theta), 3)
-            print("yaw right")
-            WriteText(frame2, "yaw right", 5)
-        elif angle <= 0 :
-            theta = 90 + angle
-            set_attitude(yaw_angle=yawangle+theta, thrust = DEFAULT_TAKEOFF_THRUST)
-            print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            print("set:"+str(yawangle+theta))
-            WriteText(frame2, "set:"+str(yawangle+theta), 3)
-            print("yaw left")
-            WriteText(frame2, "yaw left", 5)
-        else :
-            print("Pitch Forward")
-            WriteText(frame2, "Pitch Forward", 5)
-            print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            set_attitude(pitch_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
-    
+        # if angle > 0 :
+        #     theta = 90 - angle
+        #     set_attitude(yaw_angle=yawangle-theta, thrust = DEFAULT_TAKEOFF_THRUST)
+        #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+        #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+        #     print("set:"+str(yawangle-theta))
+        #     WriteText(frame2, "set:"+str(yawangle-theta), 3)
+        #     print("yaw right")
+        #     WriteText(frame2, "yaw right", 5)
+        # elif angle <= 0 :
+        #     theta = 90 + angle
+        #     set_attitude(yaw_angle=yawangle+theta, thrust = DEFAULT_TAKEOFF_THRUST)
+        #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+        #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+        #     print("set:"+str(yawangle+theta))
+        #     WriteText(frame2, "set:"+str(yawangle+theta), 3)
+        #     print("yaw left")
+        #     WriteText(frame2, "yaw left", 5)
+        # else :
+        #     print("Pitch Forward")
+        #     WriteText(frame2, "Pitch Forward", 5)
+        #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+        #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
+        #     set_attitude(pitch_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
+        ###########################送出set_altitude 指令###########################
+        set_attitude(pitch_angle = pitch_angle, yaw_angle = yawangle, roll_angle=roll_angle, thrust=0.5)
     if current_altitude < aTargetAltitude :
         DEFAULT_TAKEOFF_THRUST=0.5
         

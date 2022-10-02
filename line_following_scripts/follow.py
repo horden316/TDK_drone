@@ -197,7 +197,14 @@ def distanceCalculate(p1, p2):
     """p1 and p2 in format (x1,y1) and (x2,y2) tuples"""
     dis = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
     return dis
-
+def PID(Error = 0, Kp=0.8, Ki=0, Kd=0,max_angle=15,a=0.2):
+    total_Err = total_Err +Error
+    output = -(Kp*Error + Ki*total_Err + Kd* (Error - last_Err))
+    last_Err = Error
+    pid_angle = output*a
+    if pid_angle > max_angle: pid_angle =max_angle
+    if pid_angle < -max_angle: pid_angle =-max_angle
+    return pid_angle
 ##############主程式##############
 time.sleep(2)
 print("takeoff")
@@ -255,14 +262,16 @@ while True:
             print("X : "+str(cx)+" Y : "+str(cy))
             #########################Roll 的 PID 控制#########################
             x_distance=center[0]-cx
-            Error = x_distance
-            total_Err = total_Err +Error
-            output = -(Kp*Error + Ki*total_Err + Kd* (Error - last_Err))
-            last_Error = Error
-            u = output
-            roll_angle= u*0.2
-            if roll_angle > 15: roll_angle =15
-            if roll_angle < -15: roll_angle =-15
+            roll_angle=PID(Error = x_distance, Kp=0.8, Ki=0, Kd=0,max_angle=15,a=0.2)
+            #pitch_angle=PID(Error = x_distance, Kp=0.8, Ki=0, Kd=0,max_angle=15,a=0.2)
+            # Error = x_distance
+            # total_Err = total_Err +Error
+            # output = -(Kp*Error + Ki*total_Err + Kd* (Error - last_Err))
+            # last_Error = Error
+            # u = output
+            # roll_angle= u*0.2
+            # if roll_angle > 15: roll_angle =15
+            # if roll_angle < -15: roll_angle =-15
     #yaw調整(yaw_angle)1絕對調整
             if angle > 0 :
                 theta = 90 - angle
