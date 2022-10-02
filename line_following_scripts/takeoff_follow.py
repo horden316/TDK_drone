@@ -185,7 +185,7 @@ yawangle = math.degrees(vehicle.attitude.yaw)
 while True:
     frame2 = np.zeros((blank_height, blank_width, 3), np.uint8)
 
-    if(time.time()-RefreshTime > 0.2):
+    if (time.time()-RefreshTime > 0.2):
         RefreshTime = time.time()
         current_altitude = vehicle.rangefinder.distance
 
@@ -322,10 +322,6 @@ while True:
             set_attitude(pitch_angle=-5, thrust=DEFAULT_TAKEOFF_THRUST)
 
         '''
-
-    if current_altitude >= aTargetAltitude:
-        DEFAULT_TAKEOFF_THRUST = 0.5
-
     else:
         print("I don't see the line")
         WriteText(frame2, "I don't see the line", 1)
