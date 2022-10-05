@@ -250,91 +250,93 @@ while True:
         vehicle.mode = VehicleMode("LAND")
         time.sleep(1)
         break
-    if len(contours) > 0:
+    for pic, contour in enumerate(contours):
         c = max(contours, key=cv2.contourArea)
         M = cv2.moments(c)
-        blackbox = cv2.minAreaRect(c)
-        (x_min, y_min), (w_min, h_min), angle = blackbox
-        box = cv2.boxPoints(blackbox)
-        box = np.int0(box)
-        cv2.drawContours(frame, [box], 0, (0, 0, 255), 3)
-        if angle < -45:
-            angle = 90 + angle
-        if w_min < h_min and angle > 0:
-            angle = (90 - angle) * -1
-        if w_min > h_min and angle < 0:
-            angle = 90 + angle
-        print("Angle:" + str(angle))
-        cv2.putText(frame, "Angle: " + str(angle), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
-                    cv2.LINE_AA)
+        area = cv2.contourArea(contour)
+        if (area > 1000):
+            blackbox = cv2.minAreaRect(c)
+            (x_min, y_min), (w_min, h_min), angle = blackbox
+            box = cv2.boxPoints(blackbox)
+            box = np.int0(box)
+            cv2.drawContours(frame, [box], 0, (0, 0, 255), 3)
+            if angle < -45:
+                angle = 90 + angle
+            if w_min < h_min and angle > 0:
+                angle = (90 - angle) * -1
+            if w_min > h_min and angle < 0:
+                angle = 90 + angle
+            print("Angle:" + str(angle))
+            cv2.putText(frame, "Angle: " + str(angle), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
+                        cv2.LINE_AA)
 
-        if M["m00"] != 0:
-            cv2.circle(frame, (cx, cy), 5, (0, 0, 255), -1)
-            # centroid line
-            cv2.line(frame,  center, (cx, cy), (0, 255, 255), 1)
-            # BGR
-            cv2.line(frame,  center, (cx, cy), (0, 255, 255), 1)
-            #distance = distanceCalculate(center, (cx,cy))
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            print("X : "+str(cx)+" Y : "+str(cy))
-            #########################Roll 的 PID 控制#########################
-            x_distance = center[0]-cx
-            y_distance = center[1]-cy
-            Error = x_distance
-            total_Err = total_Err + Error
-            output = -(Kp*Error + Ki*total_Err + Kd * (Error - last_Err))
-            last_Error = Error
-            u = output
-            roll_angle = u*0.2
-            if roll_angle > 15:
-                roll_angle = 15
-            if roll_angle < -15:
-                roll_angle = -15
-    # yaw調整(yaw_angle)1絕對調整
-            if angle > 0:
-                theta = 90 - angle
-                yaw_angle = yawangle-theta
-                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-                WriteText(frame2, "current_yaw:" +
-                          str(math.degrees(vehicle.attitude.yaw)), 4)
-                print("set:"+str(yawangle-theta))
-                WriteText(frame2, "set:"+str(yawangle-theta), 3)
-                print("yaw right")
-                WriteText(frame2, "yaw right", 5)
-            elif angle <= 0:
-                theta = 90 + angle
-                yaw_angle = yawangle+theta
-                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-                WriteText(frame2, "current_yaw:" +
-                          str(math.degrees(vehicle.attitude.yaw)), 4)
-                print("set:"+str(yawangle+theta))
-                WriteText(frame2, "set:"+str(yawangle+theta), 3)
-                print("yaw left")
-                WriteText(frame2, "yaw left", 5)
-            else:
-                print("Pitch Forward")
-                WriteText(frame2, "Pitch Forward", 5)
-                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-                WriteText(frame2, "current_yaw:" +
-                          str(math.degrees(vehicle.attitude.yaw)), 4)
-    # pitch(直走)觸發條件
-            if theta > -15 and theta < 15 and x_distance > -30 and x_distance < 30:
-                pitch_angle = -5
-            else:
-                pitch_angle = 0
+            if M["m00"] != 0:
+                cv2.circle(frame, (cx, cy), 5, (0, 0, 255), -1)
+                # centroid line
+                cv2.line(frame,  center, (cx, cy), (0, 255, 255), 1)
+                # BGR
+                cv2.line(frame,  center, (cx, cy), (0, 255, 255), 1)
+                #distance = distanceCalculate(center, (cx,cy))
+                cx = int(M['m10']/M['m00'])
+                cy = int(M['m01']/M['m00'])
+                print("X : "+str(cx)+" Y : "+str(cy))
+                #########################Roll 的 PID 控制#########################
+                x_distance = center[0]-cx
+                y_distance = center[1]-cy
+                Error = x_distance
+                total_Err = total_Err + Error
+                output = -(Kp*Error + Ki*total_Err + Kd * (Error - last_Err))
+                last_Error = Error
+                u = output
+                roll_angle = u*0.2
+                if roll_angle > 15:
+                    roll_angle = 15
+                if roll_angle < -15:
+                    roll_angle = -15
+        # yaw調整(yaw_angle)1絕對調整
+                if angle > 0:
+                    theta = 90 - angle
+                    yaw_angle = yawangle-theta
+                    print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                    WriteText(frame2, "current_yaw:" +
+                              str(math.degrees(vehicle.attitude.yaw)), 4)
+                    print("set:"+str(yawangle-theta))
+                    WriteText(frame2, "set:"+str(yawangle-theta), 3)
+                    print("yaw right")
+                    WriteText(frame2, "yaw right", 5)
+                elif angle <= 0:
+                    theta = 90 + angle
+                    yaw_angle = yawangle+theta
+                    print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                    WriteText(frame2, "current_yaw:" +
+                              str(math.degrees(vehicle.attitude.yaw)), 4)
+                    print("set:"+str(yawangle+theta))
+                    WriteText(frame2, "set:"+str(yawangle+theta), 3)
+                    print("yaw left")
+                    WriteText(frame2, "yaw left", 5)
+                else:
+                    print("Pitch Forward")
+                    WriteText(frame2, "Pitch Forward", 5)
+                    print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                    WriteText(frame2, "current_yaw:" +
+                              str(math.degrees(vehicle.attitude.yaw)), 4)
+        # pitch(直走)觸發條件
+                if theta > -15 and theta < 15 and x_distance > -30 and x_distance < 30:
+                    pitch_angle = -5
+                else:
+                    pitch_angle = 0
 
-            ###########################送出set_altitude 指令###########################
-            set_attitude(pitch_angle=pitch_angle, yaw_angle=yaw_angle,
-                         roll_angle=roll_angle, thrust=0.5)
+                ###########################送出set_altitude 指令###########################
+                set_attitude(pitch_angle=pitch_angle, yaw_angle=yaw_angle,
+                             roll_angle=roll_angle, thrust=0.5)
 
-    else:
-        print("I don't see the line")
-        WriteText(frame2, "I don't see the line", 1)
-    #cv2.drawContours(frame, c, -1, (0,255,0), 5)
-    # cv2.imshow("Mask",remask)
-    # cv2.imshow("Erosion",erosion)
-    cv2.imshow("Frame", frame)
+        else:
+            print("I don't see the line")
+            WriteText(frame2, "I don't see the line", 1)
+        #cv2.drawContours(frame, c, -1, (0,255,0), 5)
+        #cv2.imshow("Mask",remask)
+        #cv2.imshow("Erosion",erosion)
+        cv2.imshow("Frame", frame)
 
     h, w, _ = frame.shape
     frame2[0:h, 0:w] = frame
