@@ -19,7 +19,7 @@ out = cv2.VideoWriter("output"+str(int(time.time())) +
 blank_width = 480
 blank_height = 360
 # PID variables
-Kp = 0.8
+Kp = 0.5
 Ki = 0
 Kd = 0
 Target_value = 0
@@ -282,10 +282,10 @@ while True:
             last_Error = Error
             u = output
             roll_angle = u*0.2
-            if roll_angle > 15:
-                roll_angle = 15
-            if roll_angle < -15:
-                roll_angle = -15
+            if roll_angle > 10:
+                roll_angle = 10
+            if roll_angle < -10:
+                roll_angle = -10
             # if x_distance > 10 :
             #     print("Roll right")
             #     WriteText(frame2, "Roll right", 2)

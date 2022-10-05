@@ -279,46 +279,20 @@ while True:
             cy = int(M['m01']/M['m00'])
             print("X : "+str(cx)+" Y : "+str(cy))
             #########################Roll 的 PID 控制#########################
-<<<<<<< HEAD
             x_distance = center[0]-cx
-            roll_angle = PID(Error=x_distance, Kp=0.8, Ki=0,
-                             Kd=0, max_angle=15, a=0.2)
-            #pitch_angle=PID(Error = x_distance, Kp=0.8, Ki=0, Kd=0,max_angle=15,a=0.2)
-            # Error = x_distance
-            # total_Err = total_Err +Error
-            # output = -(Kp*Error + Ki*total_Err + Kd* (Error - last_Err))
-            # last_Error = Error
-            # u = output
-            # roll_angle= u*0.2
-            # if roll_angle > 15: roll_angle =15
-            # if roll_angle < -15: roll_angle =-15
-    # yaw調整(yaw_angle)1絕對調整
-            if angle > 0:
-=======
-            x_distance=center[0]-cx
+            y_distance = center[1]-cy
             Error = x_distance
-            total_Err = total_Err +Error
-            output = -(Kp*Error + Ki*total_Err + Kd* (Error - last_Err))
+            total_Err = total_Err + Error
+            output = -(Kp*Error + Ki*total_Err + Kd * (Error - last_Err))
             last_Error = Error
             u = output
-            roll_angle= u*0.2
-            if roll_angle > 15: roll_angle =15
-            if roll_angle < -15: roll_angle =-15
-            # if x_distance > 0 :
-            #     roll_angle = -5
-            #     print("Roll left")
-            #     WriteText(frame2, "Roll left", 2)
-            # elif x_distance < 0 :
-            #     roll_angle = 5
-            #     print("Roll right")
-            #     WriteText(frame2, "Roll right", 2)
-            # else:
-            #     pitch_angle = -5
-            #     print("Pitch Forward")
-            #     WriteText(frame2, "Pitch Forward", 2)
-    #yaw調整(yaw_angle)1絕對調整
-            if angle > 0 :
->>>>>>> parent of ef674b3 (Update follow.py)
+            roll_angle = u*0.2
+            if roll_angle > 15:
+                roll_angle = 15
+            if roll_angle < -15:
+                roll_angle = -15
+    # yaw調整(yaw_angle)1絕對調整
+            if angle > 0:
                 theta = 90 - angle
                 yaw_angle = yawangle-theta
                 print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
