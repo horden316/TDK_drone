@@ -41,9 +41,11 @@ connection_string = '/dev/ttyACM0'
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=115200)
 
-DEFAULT_TAKEOFF_THRUST = 0.55
+DEFAULT_TAKEOFF_THRUST = 0.52
 aTargetAltitude = 0.6
-limit_time = 10
+limit_time = 12
+hold_time = 2664609484
+Reached_target = False
 
 
 def WriteText(frame2, text, seq):  # (frame,文字,第幾個)
@@ -157,10 +159,11 @@ def set_attitude(roll_angle=0.0, pitch_angle=0.0,
                              thrust)
         time.sleep(0.1)
 
+    # 原本在這裡有的是我們把它註解掉的
     # Reset attitude, or it will persist for 1s more due to the timeout
-    send_attitude_target(0, 0,
-                         0, 0, True,
-                         thrust)
+    # send_attitude_target(0, 0,
+    #                      0, 0, True,
+    #                      thrust)
 
 
 def PID(Error=0, Kp=0.8, Ki=0, Kd=0, max_angle=15, a=0.2):
@@ -197,7 +200,7 @@ current_altitude = vehicle.rangefinder.distance
 
 start = time.time()
 RefreshTime = time.time()
-
+rollangle = 0
 # Takeoff
 while True:
     frame2 = np.zeros((blank_height, blank_width, 3), np.uint8)
@@ -228,7 +231,7 @@ while True:
         Reached_target = True
         hold_time = time.time()
         # break
-    set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
+    # set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
     ret, frame = cap.read()
 
     low_b = np.uint8([255, 255, 255])
@@ -245,7 +248,7 @@ while True:
              (center_x, center_y+cross_size), (0, 0, 255), 1)
     cv2.line(frame, (center_x-cross_size, center_y),
              (center_x+cross_size, center_y), (0, 0, 255), 1)
-    start = time.time()
+    #start = time.time()
     if time.time() - start > 20:
         print("Setting LAND mode...")
         SetFixedText("Setting LAND mode...")
@@ -281,11 +284,11 @@ while True:
             output = -(Kp*Error + Ki*total_Err + Kd * (Error - last_Err))
             last_Error = Error
             u = output
-            roll_angle = u*0.2
-            if roll_angle > 10:
-                roll_angle = 10
-            if roll_angle < -10:
-                roll_angle = -10
+            rollangle = u*0.2
+            if rollangle > 15:
+                rollangle = 15
+            if rollangle < -15:
+                rollangle = -15
             # if x_distance > 10 :
             #     print("Roll right")
             #     WriteText(frame2, "Roll right", 2)
@@ -307,7 +310,7 @@ while True:
             #distance = distanceCalculate(center, (cx,cy))
             cv2.putText(frame, "x_distance: " + str(x_distance), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                         cv2.LINE_AA)
-            cv2.putText(frame, "roll: " + str(roll_angle), (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
+            cv2.putText(frame, "roll: " + str(rollangle), (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                         cv2.LINE_AA)
 
         # if angle > 0 :
@@ -335,15 +338,21 @@ while True:
         #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
         #     set_attitude(pitch_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
         ###########################送出set_altitude 指令###########################
-        set_attitude(pitch_angle=0, yaw_angle=yawangle,
-                     roll_angle=roll_angle, thrust=DEFAULT_TAKEOFF_THRUST)
+
     else:
         print("I don't see the line")
         WriteText(frame2, "I don't see the line", 1)
+        rollangle = 0
     #cv2.drawContours(frame, c, -1, (0,255,0), 5)
     # cv2.imshow("Mask",remask)
     # cv2.imshow("Erosion",erosion)
     # cv2.imshow("Frame",frame)
+
+    if time.time() - start > 5:
+        set_attitude(pitch_angle=0, yaw_angle=yawangle,
+                     roll_angle=rollangle, thrust=DEFAULT_TAKEOFF_THRUST)
+    else:
+        set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
 
     h, w, _ = frame.shape
     frame2[0:h, 0:w] = frame
@@ -359,13 +368,15 @@ while True:
         time.sleep(20)
         break
 
-
+startLANDtime = time.time()
 print("Reached target altitude")
-set_attitude(thrust=0.5)
+set_attitude(thrust=0.5, duration=2)
 print("Setting LAND mode...")
 
-
-vehicle.mode = VehicleMode("LAND")
+while True:
+    if time.time() - startLANDtime > 2:
+        vehicle.mode = VehicleMode("LAND")
+        break
 
 
 print("Close vehicle object")
