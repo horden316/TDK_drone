@@ -23,7 +23,6 @@ def distanceCalculate(p1, p2):
 
 
 while True:
-    keyPress = cv2.waitKey(20)
     ret, frame = cap.read()
     #frame = cv2.imread('./webcam/opencv_frame_0.png')
     low_b = np.uint8([255, 255, 255])
@@ -74,13 +73,13 @@ while True:
                             cv2.LINE_AA)
                 cv2.putText(frame, "roll: " + str(roll_angle), (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                             cv2.LINE_AA)
-                print(str(roll_angle))
 
     else:
         print("I don't see the line")
     #cv2.drawContours(frame, c, -1, (0,255,0), 5)
     cv2.imshow("Mask", remask)
     cv2.imshow("Frame", frame)
+    keyPress = cv2.waitKey(20)
     if keyPress & 0xff == ord('q'):   # 1 is the time in ms
         break
 
