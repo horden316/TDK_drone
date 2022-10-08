@@ -18,8 +18,10 @@ out = cv2.VideoWriter("output"+str(int(time.time())) +
 # 建立空frame2
 blank_width = 480
 blank_height = 360
-# PID variables
-Kp = 0.5
+
+
+# roll PID variables
+Kp = 0.3
 Ki = 0
 Kd = 0
 Target_value = 0
@@ -42,8 +44,8 @@ print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=115200)
 
 DEFAULT_TAKEOFF_THRUST = 0.52
-aTargetAltitude = 0.6
-limit_time = 12
+aTargetAltitude = 0.8
+limit_time = 15
 hold_time = 2664609484
 Reached_target = False
 
@@ -151,7 +153,6 @@ def set_attitude(roll_angle=0.0, pitch_angle=0.0,
     send_attitude_target(roll_angle, pitch_angle,
                          yaw_angle, yaw_rate, False,
                          thrust)
-
     start = time.time()
     while time.time() - start < duration:
         send_attitude_target(roll_angle, pitch_angle,
@@ -201,6 +202,13 @@ current_altitude = vehicle.rangefinder.distance
 start = time.time()
 RefreshTime = time.time()
 rollangle = 0
+
+'''
+# 往前走一點點
+set_attitude(yaw_angle=yawangle, pitch_angle=-5,
+             thrust=DEFAULT_TAKEOFF_THRUST, duration=1)
+'''
+
 # Takeoff
 while True:
     frame2 = np.zeros((blank_height, blank_width, 3), np.uint8)
@@ -257,7 +265,7 @@ while True:
         c = max(contours, key=cv2.contourArea)
         M = cv2.moments(c)
         area = cv2.contourArea(contour)
-        if (area > 1000):
+        if (area > 100):
             blackbox = cv2.minAreaRect(c)
             (x_min, y_min), (w_min, h_min), angle = blackbox
             box = cv2.boxPoints(blackbox)
