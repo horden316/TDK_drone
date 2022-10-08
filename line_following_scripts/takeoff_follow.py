@@ -367,19 +367,21 @@ while True:
     if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
         print("Setting LAND mode...")
         vehicle.mode = VehicleMode("LAND")
-        time.sleep(20)
+        time.sleep(2)
         break
+
+    if cv2.waitKey(1) & 0xff == ord('x'):   # 1 is the time in ms
+        print("Emergency land!!!!!!!")
+        while True:
+            set_attitude(pitch_angle=0, yaw_angle=0,
+                         roll_angle=0, thrust=0)
+
 
 startLANDtime = time.time()
-print("Reached target altitude")
-set_attitude(thrust=0.5, duration=2)
-print("Setting LAND mode...")
 
-while True:
-    if time.time() - startLANDtime > 2:
-        vehicle.mode = VehicleMode("LAND")
-        break
-
+if time.time()-startLANDtime > 0:
+    set_attitude(pitch_angle=0, yaw_angle=yawangle,
+                 roll_angle=0, thrust=0)
 
 print("Close vehicle object")
 vehicle.close()
