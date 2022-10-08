@@ -189,7 +189,6 @@ while True:
         # cv2.imshow("Mask",remask)
         # cv2.imshow("Erosion",erosion)
     cv2.imshow("Frame", frame)
-
     h, w, _ = frame.shape
     frame2[0:h, 0:w] = frame
     cv2.imshow("frame2", frame2)

@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from PID import PID
 from control import control
+from detection import line_detection
 # screen resolution
 # 0817 add keyinput for thershold
 X = 160
@@ -15,16 +16,8 @@ cap = cv2.VideoCapture(0)
 cap.set(3, X)
 cap.set(4, Y)
 
-
-def distanceCalculate(p1, p2):
-    """p1 and p2 in format (x1,y1) and (x2,y2) tuples"""
-    dis = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
-    return dis
-
-
 while True:
     ret, frame = cap.read()
-    #frame = cv2.imread('./webcam/opencv_frame_0.png')
     low_b = np.uint8([255, 255, 255])
     high_b = np.uint8([h, h, h])
     mask = cv2.inRange(frame, high_b, low_b)

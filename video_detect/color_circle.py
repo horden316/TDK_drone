@@ -1,13 +1,14 @@
 import cv2
 import numpy as np
-webcam = cv2.VideoCapture("C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
-while(1):
+# webcam = cv2.VideoCapture("C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
+webcam = cv2.VideoCapture(0)
+while (1):
     keyPress = cv2.waitKey(10)
-    _, img = webcam.read() 
+    _, img = webcam.read()
     img = cv2.resize(img, (160, 120))
-    # color space 
+    # color space
     hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    #set blue thres
+    # set blue thres
     blue_lower = np.array([94, 80, 2])
     blue_upper = np.array([120, 255, 255])
     blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
@@ -19,22 +20,22 @@ while(1):
     cv2.imshow("gray_blurred", gray_blurred)
     cv2.imshow("blue_mask", blue_mask)
     # Apply Hough transform on the blurred image.
-    detected_circles = cv2.HoughCircles(gray_blurred, 
-                    cv2.HOUGH_GRADIENT, 1, 20, param1 = 100,
-                param2 = 20, minRadius = 30, maxRadius = 80)
-    
+    detected_circles = cv2.HoughCircles(gray_blurred,
+                                        cv2.HOUGH_GRADIENT, 1, 20, param1=100,
+                                        param2=20, minRadius=30, maxRadius=80)
+
     # Draw circles that are detected.
     if detected_circles is not None:
-    
+
         # Convert the circle parameters a, b and r to integers.
         detected_circles = np.uint16(np.around(detected_circles))
-    
+
         for pt in detected_circles[0, :]:
             a, b, r = pt[0], pt[1], pt[2]
-    
+
             # Draw the circumference of the circle.
             cv2.circle(img, (a, b), r, (0, 255, 0), 2)
-    
+
             # Draw a small circle (of radius 1) to show the center.
             cv2.circle(img, (a, b), 1, (0, 0, 255), 3)
             # cv2.imshow("Detected Circle", img)
