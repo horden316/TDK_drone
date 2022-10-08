@@ -5,9 +5,9 @@ import time
 from log import log
 from detection import *
 section = 2
-cap = cv2.VideoCapture(
-    "C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
-# cap = cv2.VideoCapture(0)
+# cap = cv2.VideoCapture(
+#     "C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
+cap = cv2.VideoCapture(0)
 ##############mask參數##############
 # 黑線mask
 h = 50
