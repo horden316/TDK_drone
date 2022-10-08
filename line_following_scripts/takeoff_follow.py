@@ -216,14 +216,17 @@ while True:
 
     if time.time() - start > limit_time:
         print("take off timeout")
+
+        '''
         print("change mode to landing")
         SetFixedText("change mode to landing")
         vehicle.mode = VehicleMode("LAND")
-        time.sleep(1)
-        while True:
-            time.sleep(1)
-            print("vehicle emergency landing: open controller")
-            WriteText(frame2, "vehicle emergency landing: open controller", 1)
+        '''
+
+        # time.sleep(2)
+        print("vehicle emergency landing: open controller")
+        WriteText(frame2, "vehicle emergency landing: open controller", 1)
+        break
     if current_altitude >= aTargetAltitude and Reached_target == False:
         print("Reached target altitude")
         SetFixedText("Reached target altitude")
@@ -249,12 +252,7 @@ while True:
     cv2.line(frame, (center_x-cross_size, center_y),
              (center_x+cross_size, center_y), (0, 0, 255), 1)
     #start = time.time()
-    if time.time() - start > 20:
-        print("Setting LAND mode...")
-        SetFixedText("Setting LAND mode...")
-        vehicle.mode = VehicleMode("LAND")
-        time.sleep(1)
-        break
+
     for pic, contour in enumerate(contours):
         c = max(contours, key=cv2.contourArea)
         M = cv2.moments(c)
@@ -344,7 +342,7 @@ while True:
         else:
             print("I don't see the line")
             WriteText(frame2, "I don't see the line", 1)
-            rollangle = 0
+            #rollangle = 0
         #cv2.drawContours(frame, c, -1, (0,255,0), 5)
         # cv2.imshow("Mask",remask)
         # cv2.imshow("Erosion",erosion)
@@ -354,7 +352,7 @@ while True:
         set_attitude(pitch_angle=0, yaw_angle=yawangle,
                      roll_angle=rollangle, thrust=DEFAULT_TAKEOFF_THRUST)
     else:
-        set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
+        set_attitude(yaw_angle=yawangle, thrust=DEFAULT_TAKEOFF_THRUST)
 
     h, w, _ = frame.shape
     frame2[0:h, 0:w] = frame
