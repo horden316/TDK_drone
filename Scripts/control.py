@@ -2,17 +2,18 @@ from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelativ
 from pymavlink import mavutil  # Needed for command message definitions
 import time
 import math
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 ###############SG90參數###################
 CONTROL_PIN = 17
 PWM_FREQ = 50
 STEP = 90
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(CONTROL_PIN, GPIO.OUT)
-pwm = GPIO.PWM(CONTROL_PIN, PWM_FREQ)
-pwm.start(0)
+# GPIO.setmode(GPIO.BCM)
+# GPIO.setup(CONTROL_PIN, GPIO.OUT)
+# pwm = GPIO.PWM(CONTROL_PIN, PWM_FREQ)
+# pwm.start(0)
 ###############connect 設定###################
 vehicle = connect('/dev/ttyACM0', wait_ready=True, baud=115200)
+# vehicle = connect('COM7', wait_ready=True, baud=115200)
 
 
 def arm():
@@ -56,6 +57,7 @@ def arm_and_takeoff_nogps(aTargetAltitude, DEFAULT_TAKEOFF_THRUST=0.55, SMOOTH_T
             time.sleep(1)
             while True:
                 time.sleep(1)
+                set_attitude(thrust=0)
                 print("vehicle emergency landing: open controller")
         if current_altitude >= aTargetAltitude:  # Trigger just below target alt.
             print("Reached target altitude")
@@ -144,14 +146,7 @@ def set_attitude(roll_angle=0.0, pitch_angle=0.0,
                          thrust)
 
 
-def yaw_rate(current_yaw, yaw_rate=5, step=0.01):
-
-    yaw_time = time.time()
-    if time.time()-yaw_time() <= 1:
-        yaw_rate_angle += (time.time()-yaw_time())*yaw_rate
-    return yaw_rate_angle
 # 投放機構伺服馬達
-
 
 def angle_to_duty_cycle(angle=0):
     duty_cycle = (0.05 * PWM_FREQ) + (0.19 * PWM_FREQ * angle / 180)
@@ -165,12 +160,3 @@ def servo(servo_open=False):
     if servo_open == False:
         dc = angle_to_duty_cycle(90)
         pwm.ChangeDutyCycle(dc)
-
-
-if __name__ == "__main__":
-    yaw_time = 0
-    while (1):
-        if time.time()-yaw_time() <= 1:
-            print(str(yaw_time))
-        else:
-            yaw_time = time.time()

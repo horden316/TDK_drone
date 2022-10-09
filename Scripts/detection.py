@@ -61,8 +61,6 @@ def line_detect(frame, draw_frame, line_mask=50, cross_size=5, c_area=800):
                 cv2.line(draw_frame,  center,
                          (cx, cy), (0, 255, 255), 1)
                 distance = distanceCalculate(center, (cx, cy))
-            else:
-                print("I don't see the line")
     return (cx, cy), angle, frame, out_mask, x_distance, y_distance
 
 

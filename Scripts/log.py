@@ -14,7 +14,7 @@ def log(frame=(100, 0, 0), lane_mask=(100, 0, 0), red_mask=(100, 0, 0), drop_mas
         show=True, alt=0.0, pitch=0.0, roll=0.0, yaw=0.0,
         t_alt=0.0, t_pitch=0.0, t_roll=0.0, t_yaw=0.0,
         lane_xy=(0.0, 0.0), lane_angle=0.0, lane_dis=0.0,
-        target="None", target_xy=(0.0, 0.0), status="None", section=0,):
+        target="None", target_xy=(0.0, 0.0), status="None", section=0, thrust=0):
     h, w, _ = frame.shape
     back_frame = np.zeros((blank_height, blank_width, 3), np.uint8)
     # lane_mask = cv2.merge((lane_mask, lane_mask, lane_mask))
@@ -46,8 +46,11 @@ def log(frame=(100, 0, 0), lane_mask=(100, 0, 0), red_mask=(100, 0, 0), drop_mas
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 150, 255), 1, cv2.LINE_AA)
     cv2.putText(back_frame, "Section:"+str(section), (240, 260+4*text_yspace),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 150, 255), 1, cv2.LINE_AA)
+    cv2.putText(back_frame, "Thrust:"+str(thrust), (400, 260+6*text_yspace),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 150, 255), 1, cv2.LINE_AA)
     if show == True:
         cv2.imshow("Frame", back_frame)
+    return back_frame
 
 
 #####################testing code#####################
