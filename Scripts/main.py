@@ -7,14 +7,14 @@ from detection import *
 # from control import *  # 會直接與mavlink連接
 from movement import *
 import math
-# cap = cv2.VideoCapture(
-#     "C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(
+    "C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
+# cap = cv2.VideoCapture(0)
 ##############狀態參數##############
 status = None
 red_count = 0
 thrust = 0
-section = 2  # 設定起始階段
+section = 4  # 設定起始階段
 status1 = ""
 status2 = ""
 target = ""
@@ -28,8 +28,8 @@ section_time = time.time()
 # 黑線mask
 h = 50
 # 紅燈mask
-# red_lower = np.array([93, 83, 204], np.uint8)
-red_lower = np.array([40, 40, 0], np.uint8)
+red_lower = np.array([93, 83, 204], np.uint8)
+# red_lower = np.array([40, 40, 0], np.uint8)
 red_upper = np.array([198, 130, 255], np.uint8)
 # 藍色投放點mask
 blue_lower = np.array([94, 80, 2])
@@ -43,6 +43,7 @@ out = cv2.VideoWriter("output"+str(int(time.time())) +
                       ".avi", fourcc, 20.0, (480,  360))
 ##################起飛準備##################
 section_time = time.time()
+# arm()
 while (1):
     ret, frame = cap.read()
     frame = cv2.resize(frame, (160, 120))
@@ -72,7 +73,7 @@ while (1):
         if EM_land == True:
             break
         # section 切換時間
-        elif ((time.time()-section_time) > 15):
+        elif ((time.time()-section_time) > 20):
             section_time = time.time()
             section = 2
     #########################section1#########################
@@ -91,7 +92,7 @@ while (1):
         if EM_land == True:
             break
         # section 切換時間
-        elif ((time.time()-section_time) > 15):
+        elif ((time.time()-section_time) > 20):
             section_time = time.time()
             section = 2
 
@@ -102,6 +103,7 @@ while (1):
             frame=frame, draw_frame=draw_frame, line_mask=h)
         red, red_mask, draw_frame, (tx, ty), t_x_dis, t_y_dis = traffic_detect(
             frame=frame, draw_frame=draw_frame, red_lower=red_lower, red_upper=red_upper)
+        # print(red_count)
         if red == True:
             red_count += 1
             red_stay_time = time.time()
@@ -125,7 +127,7 @@ while (1):
                 x=lx, current_alt=c_alt, angle=None, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
             # 跳下個section ###!!!!!!隱患若是偵測到錯的redlight 將會跳下個section 法一:下個section也偵測red
             # 若是辨識過red
-            if red_count > 0:
+            if red_count > 100:
                 section = 3
     #########################section3#########################
     # 走線 + 投遞:
@@ -134,12 +136,12 @@ while (1):
             frame=frame, draw_frame=draw_frame, line_mask=50)
         drop, blue_mask, draw_frame, (bx, by), x_distance, y_distance = drop_detect(
             frame, draw_frame, blue_lower=blue_lower, blue_upper=blue_upper)
-        print(drop_cnt)
+        # print(drop_cnt)
         if drop == True:
             drop_cnt += 1
             pitch_angle, roll_angle, yaw_angle, thrust, status = stay(
                 x=bx, y=by, current_alt=c_alt, angle=None, current_yaw=c_yaw, thrust=0.5)
-            if (drop_cnt > 1000):
+            if (drop_cnt > 100):
                 target = "drop"
                 target_xy = (bx, by)
                 # 校正位置
@@ -153,7 +155,11 @@ while (1):
                 x=lx, current_alt=c_alt, angle=None, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
     #########################section4#########################
     # 走線 + 降落:
-    # if section==4:
+    if section == 4:
+        (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
+            frame=frame, draw_frame=draw_frame, line_mask=h)
+        red_h, red_h_mask, draw_frame, (tx, ty), t_x_dis, t_y_dis = traffic_detect(
+            frame=frame, draw_frame=draw_frame, red_lower=red_lower, red_upper=red_upper)
 
     ######################### SET ALTITUDE #########################
     # set_attitude(pitch_angle=pitch_angle, yaw_angle=yaw_angle,
@@ -170,7 +176,7 @@ while (1):
     #     lane_xy=(0.0, 0.0), lane_angle=0.0, lane_dis=0.0,
     #     target="None", target_xy=(0.0, 0.0), status="None", section=0, thrust=0)
 
-    if cv2.waitKey(1) & 0xFF == ord(' '):
+    if cv2.waitKey(0) & 0xFF == ord(' '):
         print("Key pressed EM land")
         break
     # out.write(back_frame)
