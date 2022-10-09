@@ -21,7 +21,7 @@ blank_height = 360
 
 
 # roll PID variables
-Kp = 0.3
+Kp = 0.35
 Ki = 0
 Kd = 0
 Target_value = 0
@@ -225,6 +225,8 @@ while True:
 
     if time.time() - start > limit_time:
         print("take off timeout")
+        set_attitude(pitch_angle=0, yaw_angle=yawangle,
+                     roll_angle=0, thrust=0)
 
         '''
         print("change mode to landing")
@@ -322,7 +324,7 @@ while True:
                 cv2.putText(frame, "roll: " + str(rollangle), (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                             cv2.LINE_AA)
 
-            if angle > 5:
+            if angle > 0:
                 theta = 90 - angle
                 yawangle = math.degrees(vehicle.attitude.yaw)-theta
                 if(yawangle > 180):
@@ -336,8 +338,8 @@ while True:
                 WriteText(frame2, "set:"+str(yawangle), 3)
                 print("yaw right")
                 WriteText(frame2, "yaw right", 5)
-                pitchangle = 0
-            elif angle <= -5:
+
+            elif angle <= 0:
                 theta = 90 + angle
                 yawangle = math.degrees(vehicle.attitude.yaw)+theta
                 if(yawangle > 180):
@@ -351,24 +353,38 @@ while True:
                 WriteText(frame2, "set:"+str(yawangle), 3)
                 print("yaw left")
                 WriteText(frame2, "yaw left", 5)
-                pitchangle = 0
-            else:
+
+            if (angle > 80 or angle < -80) and x_distance < 15:
                 print("Pitch Forward")
-                WriteText(frame2, "Pitch Forward", 5)
+                WriteText(frame2, "Pitch Forward", 6)
                 print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
                 WriteText(frame2, "current_yaw:" +
                           str(math.degrees(vehicle.attitude.yaw)), 4)
-                pitchangle = -5
+                pitchangle = -1
+
+            else:
+                print("Pitch Stop")
+                WriteText(frame2, "Pitch Stop", 6)
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:" +
+                          str(math.degrees(vehicle.attitude.yaw)), 4)
+                pitchangle = 0
             ###########################送出set_altitude 指令###########################
 
         else:
             print("I don't see the line")
             WriteText(frame2, "I don't see the line", 1)
+            pitchangle = 0
             #rollangle = 0
         #cv2.drawContours(frame, c, -1, (0,255,0), 5)
         # cv2.imshow("Mask",remask)
         # cv2.imshow("Erosion",erosion)
         # cv2.imshow("Frame",frame)
+
+    if len(contours) == 0:
+        print("I don't see the line")
+        WriteText(frame2, "I don't see the line", 1)
+        pitchangle = 0
 
     if time.time() - start > 5:
         set_attitude(pitch_angle=pitchangle, yaw_angle=yawangle,
@@ -384,24 +400,28 @@ while True:
 
     out.write(frame2)
 
-    if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
-        print("Setting LAND mode...")
-        vehicle.mode = VehicleMode("LAND")
-        time.sleep(2)
-        break
+    # if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
+    # print("Setting LAND mode...")
+    # vehicle.mode = VehicleMode("LAND")
+    # time.sleep(2)
+    # break
 
     if cv2.waitKey(1) & 0xff == ord('x'):   # 1 is the time in ms
         print("Emergency land!!!!!!!")
-        while True:
-            set_attitude(pitch_angle=0, yaw_angle=0,
-                         roll_angle=0, thrust=0)
+        set_attitude(pitch_angle=0, yaw_angle=0, roll_angle=0, thrust=0)
+        vehicle.armed = False
+        break
+        # while True:
+        #     set_attitude(pitch_angle=0, yaw_angle=0,
+        #                  roll_angle=0, thrust=0)
 
 
-startLANDtime = time.time()
+#startLANDtime = time.time()
 
-if time.time()-startLANDtime > 0:
-    set_attitude(pitch_angle=0, yaw_angle=yawangle,
-                 roll_angle=0, thrust=0)
+# if time.time()-startLANDtime > 0:
+set_attitude(pitch_angle=0, yaw_angle=yawangle,
+             roll_angle=0, thrust=0)
+vehicle.armed = False
 
 print("Close vehicle object")
 vehicle.close()
