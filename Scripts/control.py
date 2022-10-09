@@ -144,6 +144,15 @@ def set_attitude(roll_angle=0.0, pitch_angle=0.0,
                          thrust)
 
 
+def yaw_rate(current_yaw, yaw_rate=5, step=0.01):
+
+    yaw_time = time.time()
+    if time.time()-yaw_time() <= 1:
+        yaw_rate_angle += (time.time()-yaw_time())*yaw_rate
+    return yaw_rate_angle
+# 投放機構伺服馬達
+
+
 def angle_to_duty_cycle(angle=0):
     duty_cycle = (0.05 * PWM_FREQ) + (0.19 * PWM_FREQ * angle / 180)
     return duty_cycle
@@ -156,3 +165,12 @@ def servo(servo_open=False):
     if servo_open == False:
         dc = angle_to_duty_cycle(90)
         pwm.ChangeDutyCycle(dc)
+
+
+if __name__ == "__main__":
+    yaw_time = 0
+    while (1):
+        if time.time()-yaw_time() <= 1:
+            print(str(yaw_time))
+        else:
+            yaw_time = time.time()

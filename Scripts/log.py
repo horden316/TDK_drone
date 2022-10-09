@@ -38,7 +38,7 @@ def log(frame=(100, 0, 0), lane_mask=(100, 0, 0), red_mask=(100, 0, 0), drop_mas
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
     cv2.putText(back_frame, "Detection:", (0, 260+4*text_yspace),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-    cv2.putText(back_frame, "Lane:"+"(x,y)="+str(lane_xy)+"  angle="+str(lane_angle), (0, 260+5*text_yspace),
+    cv2.putText(back_frame, "Lane:"+"(x,y)="+str(lane_xy)+"  angle="+str(format(lane_angle, '.1f')), (0, 260+5*text_yspace),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
     cv2.putText(back_frame, "Target:"+str(target)+"(x,y)="+str(target_xy), (0, 260+6*text_yspace),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)

@@ -24,7 +24,11 @@ while (1):
     ret, frame = cap.read()
     frame = cv2.resize(frame, (160, 120))
     draw_frame = frame.copy()
+    #########################section0#########################
+    if section == 0:
+        print("take_off")
     #########################section1#########################
+    #走線 + 紅燈辨識
     if section == 1:
         (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
             frame=frame, draw_frame=draw_frame, line_mask=50)
