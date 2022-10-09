@@ -202,6 +202,7 @@ current_altitude = vehicle.rangefinder.distance
 start = time.time()
 RefreshTime = time.time()
 rollangle = 0
+pitchangle = 0
 
 '''
 # 往前走一點點
@@ -321,9 +322,9 @@ while True:
                 cv2.putText(frame, "roll: " + str(rollangle), (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                             cv2.LINE_AA)
 
-            if angle > 0:
+            if angle > 5:
                 theta = 90 - angle
-                yawangle = vehicle.attitude.yaw-theta
+                yawangle = math.degrees(vehicle.attitude.yaw)-theta
                 if(yawangle > 180):
                     yawangle = -180 + (yawangle-180)
                 if(yawangle < -180):
@@ -335,9 +336,10 @@ while True:
                 WriteText(frame2, "set:"+str(yawangle), 3)
                 print("yaw right")
                 WriteText(frame2, "yaw right", 5)
-            elif angle <= 0:
+                pitchangle = 0
+            elif angle <= -5:
                 theta = 90 + angle
-                yawangle = vehicle.attitude.yaw+theta
+                yawangle = math.degrees(vehicle.attitude.yaw)+theta
                 if(yawangle > 180):
                     yawangle = -180 + (yawangle-180)
                 if(yawangle < -180):
@@ -349,6 +351,7 @@ while True:
                 WriteText(frame2, "set:"+str(yawangle), 3)
                 print("yaw left")
                 WriteText(frame2, "yaw left", 5)
+                pitchangle = 0
             else:
                 print("Pitch Forward")
                 WriteText(frame2, "Pitch Forward", 5)
