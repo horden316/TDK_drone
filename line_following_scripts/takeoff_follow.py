@@ -321,30 +321,41 @@ while True:
                 cv2.putText(frame, "roll: " + str(rollangle), (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                             cv2.LINE_AA)
 
-            # if angle > 0 :
-            #     theta = 90 - angle
-            #     set_attitude(yaw_angle=yawangle-theta, thrust = DEFAULT_TAKEOFF_THRUST)
-            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            #     print("set:"+str(yawangle-theta))
-            #     WriteText(frame2, "set:"+str(yawangle-theta), 3)
-            #     print("yaw right")
-            #     WriteText(frame2, "yaw right", 5)
-            # elif angle <= 0 :
-            #     theta = 90 + angle
-            #     set_attitude(yaw_angle=yawangle+theta, thrust = DEFAULT_TAKEOFF_THRUST)
-            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            #     print("set:"+str(yawangle+theta))
-            #     WriteText(frame2, "set:"+str(yawangle+theta), 3)
-            #     print("yaw left")
-            #     WriteText(frame2, "yaw left", 5)
-            # else :
-            #     print("Pitch Forward")
-            #     WriteText(frame2, "Pitch Forward", 5)
-            #     print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            #     WriteText(frame2, "current_yaw:"+str(math.degrees(vehicle.attitude.yaw)), 4)
-            #     set_attitude(pitch_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
+            if angle > 0:
+                theta = 90 - angle
+                yawangle = vehicle.attitude.yaw-theta
+                if(yawangle > 180):
+                    yawangle = -180 + (yawangle-180)
+                if(yawangle < -180):
+                    yawangle = 180 + (yawangle+180)
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:" +
+                          str(math.degrees(vehicle.attitude.yaw)), 4)
+                print("set:"+str(yawangle))
+                WriteText(frame2, "set:"+str(yawangle), 3)
+                print("yaw right")
+                WriteText(frame2, "yaw right", 5)
+            elif angle <= 0:
+                theta = 90 + angle
+                yawangle = vehicle.attitude.yaw+theta
+                if(yawangle > 180):
+                    yawangle = -180 + (yawangle-180)
+                if(yawangle < -180):
+                    yawangle = 180 + (yawangle+180)
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:" +
+                          str(math.degrees(vehicle.attitude.yaw)), 4)
+                print("set:"+str(yawangle))
+                WriteText(frame2, "set:"+str(yawangle), 3)
+                print("yaw left")
+                WriteText(frame2, "yaw left", 5)
+            else:
+                print("Pitch Forward")
+                WriteText(frame2, "Pitch Forward", 5)
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:" +
+                          str(math.degrees(vehicle.attitude.yaw)), 4)
+                pitchangle = -5
             ###########################送出set_altitude 指令###########################
 
         else:
@@ -357,7 +368,7 @@ while True:
         # cv2.imshow("Frame",frame)
 
     if time.time() - start > 5:
-        set_attitude(pitch_angle=0, yaw_angle=yawangle,
+        set_attitude(pitch_angle=pitchangle, yaw_angle=yawangle,
                      roll_angle=rollangle, thrust=DEFAULT_TAKEOFF_THRUST)
     else:
         set_attitude(yaw_angle=yawangle, thrust=DEFAULT_TAKEOFF_THRUST)
