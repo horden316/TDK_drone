@@ -4,15 +4,16 @@ import os
 import time
 from log import log
 from detection import *
-from control import *  # 會直接與mavlink連接
+# from control import *  # 會直接與mavlink連接
 import math
-section = 0
+section = 1
 # cap = cv2.VideoCapture(
 #     "C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
 cap = cv2.VideoCapture(0)
 ##############狀態參數##############
 status = None
 red_count = 0
+thrust = 0
 ##############時間參數##############
 red_stay_time = time.time()
 ##############mask參數##############
@@ -37,10 +38,10 @@ while (1):
     frame = cv2.resize(frame, (160, 120))
     draw_frame = frame.copy()
     ###################機體狀態###################
-    c_alt = vehicle.rangefinder.distance
-    c_pitch = math.degree(vehicle.attitude.roll)
-    c_roll = math.degree(vehicle.attitude.roll)
-    c_yaw = math.degree(vehicle.attitude.roll)
+    # c_alt = vehicle.rangefinder.distance
+    # c_pitch = math.degree(vehicle.attitude.roll)
+    # c_roll = math.degree(vehicle.attitude.roll)
+    # c_yaw = math.degree(vehicle.attitude.roll)
 
     #########################section-1#########################
     if section == -1:

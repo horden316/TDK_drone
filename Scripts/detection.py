@@ -15,7 +15,7 @@ def distanceCalculate(p1, p2):
     return dis
 
 
-def line_detect(frame, draw_frame, line_mask=50, cross_size=5, c_area=800):
+def line_detect(frame, draw_frame, line_mask=50, cross_size=5, c_area=300):
     ############init_val#############
     (cx, cy) = (0.0, 0.0)
     angle = 0
@@ -125,7 +125,7 @@ def drop_detect(frame, draw_frame, blue_lower, blue_upper):
 
     # Draw circles that are detected.
     if detected_circles is not None:
-
+        drop = True
         # Convert the circle parameters a, b and r to integers.
         detected_circles = np.uint16(np.around(detected_circles))
 

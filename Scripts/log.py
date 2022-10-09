@@ -30,11 +30,11 @@ def log(frame=(100, 0, 0), lane_mask=(100, 0, 0), red_mask=(100, 0, 0), drop_mas
     back_frame[120:120+h, 320:320+w] = ex_frame
     cv2.putText(back_frame, "alt:"+str(alt)+"/"+str(t_alt), (0, 260),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
-    cv2.putText(back_frame, "pitch:"+str(pitch)+"/"+str(pitch), (0, 260+text_yspace),
+    cv2.putText(back_frame, "pitch:"+str(pitch)+"/"+str(t_pitch), (0, 260+text_yspace),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
-    cv2.putText(back_frame, "roll:"+str(roll)+"/"+str(roll), (0, 260+2*text_yspace),
+    cv2.putText(back_frame, "roll:"+str(roll)+"/"+str(t_roll), (0, 260+2*text_yspace),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
-    cv2.putText(back_frame, "yaw:"+str(yaw)+"/"+str(yaw), (0, 260+3*text_yspace),
+    cv2.putText(back_frame, "yaw:"+str(yaw)+"/"+str(t_yaw), (0, 260+3*text_yspace),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1, cv2.LINE_AA)
     cv2.putText(back_frame, "Detection:", (0, 260+4*text_yspace),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
@@ -46,7 +46,7 @@ def log(frame=(100, 0, 0), lane_mask=(100, 0, 0), red_mask=(100, 0, 0), drop_mas
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 150, 255), 1, cv2.LINE_AA)
     cv2.putText(back_frame, "Section:"+str(section), (240, 260+4*text_yspace),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 150, 255), 1, cv2.LINE_AA)
-    cv2.putText(back_frame, "Thrust:"+str(thrust), (400, 260+6*text_yspace),
+    cv2.putText(back_frame, "Thrust:"+str(thrust), (370, 260+6*text_yspace),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 150, 255), 1, cv2.LINE_AA)
     if show == True:
         cv2.imshow("Frame", back_frame)
