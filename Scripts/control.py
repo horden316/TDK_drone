@@ -7,10 +7,10 @@ import math
 CONTROL_PIN = 17
 PWM_FREQ = 50
 STEP = 90
-# GPIO.setmode(GPIO.BCM)
-# GPIO.setup(CONTROL_PIN, GPIO.OUT)
-# pwm = GPIO.PWM(CONTROL_PIN, PWM_FREQ)
-# pwm.start(0)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(CONTROL_PIN, GPIO.OUT)
+pwm = GPIO.PWM(CONTROL_PIN, PWM_FREQ)
+pwm.start(0)
 ###############connect 設定###################
 vehicle = connect('/dev/ttyACM0', wait_ready=True, baud=115200)
 # vehicle = connect('COM7', wait_ready=True, baud=115200)
