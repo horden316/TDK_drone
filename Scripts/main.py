@@ -67,9 +67,16 @@ while (1):
         # def takeoff
         thrust, status1, EM_land = takeoff(current_alt=c_alt, setAltitude=setAltitude,
                                            setThrust=0.52, EM_land_time=10)
-        # def moveforward move_pitch_angle = 0
-        pitch_angle, roll_angle, yaw_angle, status2, _ = move_forward(
-            x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=0, stay_pitch_angle=0, current_yaw=c_yaw)
+
+        if thrust != 0.5:
+            # def moveforward move_pitch_angle = 0
+            yaw_angle = Init_yaw
+            pitch_angle, roll_angle, _, status2, _ = move_forward(
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-1, current_yaw=c_yaw)
+        else:
+            pitch_angle, roll_angle, yaw_angle, status2, _ = move_forward(
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=c_yaw)
+
         status = status1 + status2
         if EM_land == True:
             break
