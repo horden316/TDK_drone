@@ -50,18 +50,20 @@ def stay(x, y, current_alt, angle=None, current_yaw=0, thrust=0.5):
     y_dis = center_y-y
     # 隨高度降低p值
     if current_alt < 0.5:
-        PID_p = 0.06
+        PID_p = 0.0
+        PID_i = 0.0
     else:
-        PID_p = 0.05
+        PID_p = 0.2
+        PID_i = 0.001
 
     if x > 0:
         # roll PID
         pid_roll = PID(
-            Error=x_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
+            Error=x_dis, Kp=PID_p, Ki=PID_i, Kd=0, max_angle=15, a=0.2)
         roll_angle = pid_roll.PID()
         # pitch PID
         pid_pitch = PID(
-            Error=y_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
+            Error=y_dis, Kp=PID_p, Ki=PID_i, Kd=0, max_angle=15, a=0.2)
         pitch_angle = pid_pitch.PID()
     # yaw_angle######### 可能有BUG
     if angle is None:
@@ -106,7 +108,7 @@ def move_forward(x, current_alt, angle=None, move_pitch_angle=-1, stay_pitch_ang
         PID_p = 0.0
         PID_i = 0.0
     else:
-        PID_p = 0.2
+        PID_p = 0.23
         PID_i = 0.001
 
     if x > 0:
