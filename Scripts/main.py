@@ -53,14 +53,11 @@ while (1):
     frame = cv2.resize(frame, (160, 120))
     draw_frame = frame.copy()
     ###################機體狀態###################
-    # c_alt = vehicle.rangefinder.distance
-    # c_pitch = math.degree(vehicle.attitude.roll)
-    # c_roll = math.degree(vehicle.attitude.roll)
-    # c_yaw = math.degree(vehicle.attitude.roll)
-    c_alt = 0.9
-    c_pitch = 0
-    c_roll = 0
-    c_yaw = 0
+    c_alt = vehicle.rangefinder.distance
+    c_pitch = math.degrees(vehicle.attitude.pitch)
+    c_roll = math.degrees(vehicle.attitude.roll)
+    c_yaw = math.degrees(vehicle.attitude.yaw)
+
     #########################section0#########################
     # 原地起飛
     if section == 0:
