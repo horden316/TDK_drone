@@ -50,17 +50,19 @@ def stay(x, y, current_alt, angle=None, current_yaw=0, thrust=0.5):
     y_dis = center_y-y
     # 隨高度降低p值
     if current_alt < 0.5:
-        PID_p = 0.35
+        PID_p = 0.06
     else:
-        PID_p = 0.3
-    # roll PID
-    pid_roll = PID(
-        Error=x_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
-    roll_angle = pid_roll.PID()
-    # pitch PID
-    pid_pitch = PID(
-        Error=y_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
-    pitch_angle = pid_pitch.PID()
+        PID_p = 0.05
+
+    if x > 0:
+        # roll PID
+        pid_roll = PID(
+            Error=x_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
+        roll_angle = pid_roll.PID()
+        # pitch PID
+        pid_pitch = PID(
+            Error=y_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
+        pitch_angle = pid_pitch.PID()
     # yaw_angle######### 可能有BUG
     if angle is None:
         yaw_angle = current_yaw
@@ -98,15 +100,20 @@ def move_forward(x, current_alt, angle=None, move_pitch_angle=-1, stay_pitch_ang
     global status
     status = "move_forward"
     x_dis = center_x-x
+
     # 隨高度降低p值
-    if current_alt < 0.5:
-        PID_p = 0.35
+    if current_alt < 0.4:
+        PID_p = 0.0
+        PID_i = 0.0
     else:
-        PID_p = 0.3
-    # roll PID
-    pid_roll = PID(
-        Error=x_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
-    roll_angle = pid_roll.PID()
+        PID_p = 0.2
+        PID_i = 0.001
+
+    if x > 0:
+        # roll PID
+        pid_roll = PID(
+            Error=x_dis, Kp=PID_p, Ki=PID_i, Kd=0, max_angle=15, a=0.2)
+        roll_angle = pid_roll.PID()
     #########yaw_angle#########
     if angle is None:
         yaw_angle = current_yaw
@@ -158,13 +165,15 @@ def landing(x, y, current_alt, thrust=0.4):
         PID_p = 0.35
     else:
         PID_p = 0.3
-    # roll PID
-    pid_roll = PID(
-        Error=x_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
-    roll_angle = pid_roll.PID()
-    pid_pitch = PID(
-        Error=y_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
-    pitch_angle = pid_pitch.PID()
+
+    if x > 0:
+        # roll PID
+        pid_roll = PID(
+            Error=x_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
+        roll_angle = pid_roll.PID()
+        pid_pitch = PID(
+            Error=y_dis, Kp=PID_p, Ki=0, Kd=0, max_angle=15, a=0.2)
+        pitch_angle = pid_pitch.PID()
     if current_alt <= 0.31:
         thrust = 0
     return pitch_angle, roll_angle, thrust
