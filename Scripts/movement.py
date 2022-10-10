@@ -87,8 +87,8 @@ def stay(x, y, current_alt, angle=None, current_yaw=0, thrust=0.5):
             print("set:"+str(yaw_angle))
             print("yaw left")
             pitchangle = 0
-        else:
-            yaw_angle = current_yaw
+        # else:
+        #     yaw_angle = current_yaw
     return pitch_angle, roll_angle, yaw_angle, thrust, status
 
 
@@ -137,8 +137,8 @@ def move_forward(x, current_alt, angle=None, move_pitch_angle=-1, stay_pitch_ang
                 yaw_angle = 180 + (yaw_angle+180)
             print("set:"+str(yaw_angle))
             print("yaw left")
-        else:
-            yaw_angle = current_yaw
+        # else:
+        #     yaw_angle = current_yaw
 
         if x == 0 and angle == 0:
             print("I don't see the line")
