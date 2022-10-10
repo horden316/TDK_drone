@@ -62,29 +62,33 @@ while (1):
     #########################section0#########################
     # 原地起飛
     if section == 0:
-        setAltitude = 1
+        setAltitude = 0.8
+        # hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        # blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
+        # blue_mask = cv2.bitwise_not(blue_mask)
+        # frame[blue_mask > 0] = (255, 255, 255)
         (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
             frame=frame, draw_frame=draw_frame, line_mask=h)
         # def takeoff
         thrust, status1, EM_land = takeoff(current_alt=c_alt, setAltitude=setAltitude,
-                                           setThrust=0.52, EM_land_time=10)
+                                           setThrust=0.53, EM_land_time=10)
 
         if thrust != 0.5:
             # def moveforward move_pitch_angle = 0
             yaw_angle = Init_yaw
             pitch_angle, roll_angle, _, status2, _ = move_forward(
-                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-1, current_yaw=c_yaw)
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-2, current_yaw=c_yaw)
         else:
             pitch_angle, roll_angle, yaw_angle, status2, _ = move_forward(
-                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=c_yaw)
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-1, current_yaw=c_yaw)
 
         status = status1 + status2
         if EM_land == True:
             break
         # section 切換時間
-        elif ((time.time()-section_time) > 20):
+        elif ((time.time()-section_time) > 8):
             section_time = time.time()
-            #section = 2
+            section = 2
     #########################section1#########################
     # 直走起飛
     if section == 1:
@@ -103,15 +107,15 @@ while (1):
         # section 切換時間
         elif ((time.time()-section_time) > 20):
             section_time = time.time()
-            section = 2
+            #section = 2
 
     #########################section2#########################
     #走線 + 紅燈辨識
     if section == 2:
-        (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
-            frame=frame, draw_frame=draw_frame, line_mask=h)
         red, red_mask, draw_frame, (tx, ty), t_x_dis, t_y_dis = traffic_detect(
             frame=frame, draw_frame=draw_frame, red_lower=red_lower, red_upper=red_upper)
+        (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
+            frame=frame, draw_frame=draw_frame, line_mask=h)
         # print(red_count)
         if red == True:
             red_count += 1
@@ -133,7 +137,7 @@ while (1):
             # print("move forward")
             # status = "move forward"
             pitch_angle, roll_angle, yaw_angle, status, thrust = move_forward(
-                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-1, current_yaw=c_yaw, thrust=0.5)
             # 跳下個section ###!!!!!!隱患若是偵測到錯的redlight 將會跳下個section 法一:下個section也偵測red
             # 若是辨識過red
             if red_count > 100:
@@ -183,7 +187,7 @@ while (1):
     set_attitude(pitch_angle=pitch_angle, yaw_angle=yaw_angle,
                  roll_angle=roll_angle, thrust=thrust)
     ######################### LOG #########################
-    back_frame = log(frame=draw_frame, h_mask=(100, 0, 0), ex_frame=(100, 0, 0),
+    back_frame = log(frame=draw_frame, lane_mask=line_mask, h_mask=(100, 0, 0), ex_frame=(100, 0, 0),
                      show=True, alt=c_alt, pitch=c_pitch, roll=c_roll, yaw=c_yaw,
                      t_alt=setAltitude, t_pitch=pitch_angle, t_roll=roll_angle, t_yaw=yaw_angle,
                      lane_xy=(lx, ly), lane_angle=line_angle,
