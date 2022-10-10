@@ -64,43 +64,6 @@ def line_detect(frame, draw_frame, line_mask=50, cross_size=5, c_area=300):
     return (cx, cy), angle, frame, out_mask, x_distance, y_distance
 
 
-def traffic_detect(frame, draw_frame, red_lower, red_upper, c_area=800):
-    ############init_val#############
-    red = None
-    (cx, cy) = (0.0, 0.0)
-    out_mask = 0
-    x_distance = 0.0
-    y_distance = 0.0
-    #################################
-    hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    red_mask = cv2.inRange(hsvFrame, red_lower, red_upper)
-    red_mask2 = cv2.merge((red_mask, red_mask, red_mask))
-    contours, hierarchy = cv2.findContours(red_mask,
-                                           cv2.RETR_TREE,
-                                           cv2.CHAIN_APPROX_SIMPLE)
-    for pic, contour in enumerate(contours):
-        c_color = max(contours, key=cv2.contourArea)
-        M = cv2.moments(c_color)
-        area = cv2.contourArea(contour)
-        if (area > 800):
-            red = True
-            x, y, w, h = cv2.boundingRect(contour)
-            draw_frame = cv2.rectangle(draw_frame, (x, y),
-                                       (x + w, y + h),
-                                       (0, 0, 255), 2)
-            if M["m00"] != 0:
-                cx = int(M['m10']/M['m00'])
-                cy = int(M['m01']/M['m00'])
-                x_distance = center[0]-cx
-                y_distance = center[1]-cy
-                print("X : "+str(cx)+" Y : "+str(cy))
-                cv2.circle(draw_frame, (cx, cy), 5, (0, 0, 255), -1)
-                cv2.putText(draw_frame, "Red Colour", (x, y),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1.0,
-                            (0, 0, 255))
-    return red, red_mask2, draw_frame, (cx, cy), x_distance, y_distance
-
-
 def drop_detect(frame, draw_frame, blue_lower, blue_upper):
     ############init_val#############
     drop = None
