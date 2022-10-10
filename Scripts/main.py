@@ -172,10 +172,10 @@ while (1):
             pitch_angle, roll_angle, yaw_angle, status, thrust = move_forward(
                 x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
     ######################### SET ALTITUDE #########################
-    # set_attitude(pitch_angle=pitch_angle, yaw_angle=yaw_angle,
-    #              roll_angle=roll_angle, thrust=thrust)
+    set_attitude(pitch_angle=pitch_angle, yaw_angle=yaw_angle,
+                 roll_angle=roll_angle, thrust=thrust)
     ######################### LOG #########################
-    back_frame = log(frame=draw_frame, lane_mask=line_mask, red_mask=red_mask, drop_mask=blue_mask, h_mask=(100, 0, 0), ex_frame=(100, 0, 0),
+    back_frame = log(frame=draw_frame, h_mask=(100, 0, 0), ex_frame=(100, 0, 0),
                      show=True, alt=c_alt, pitch=c_pitch, roll=c_roll, yaw=c_yaw,
                      t_alt=setAltitude, t_pitch=pitch_angle, t_roll=roll_angle, t_yaw=yaw_angle,
                      lane_xy=(lx, ly), lane_angle=line_angle,
