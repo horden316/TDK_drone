@@ -4,17 +4,17 @@ import os
 import time
 from log import log
 from detection import *
-# from control import *  # 會直接與mavlink連接
+from control import *  # 會直接與mavlink連接
 from movement import *
 import math
-cap = cv2.VideoCapture(
-    "C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
-# cap = cv2.VideoCapture(0)
+# cap = cv2.VideoCapture(
+#     "C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
+cap = cv2.VideoCapture(0)
 ##############狀態參數##############
 status = None
 red_count = 0
 thrust = 0
-section = 1  # 設定起始階段
+section = 0  # 設定起始階段
 status1 = ""
 status2 = ""
 target = ""
@@ -47,7 +47,8 @@ out = cv2.VideoWriter("output"+str(int(time.time())) +
                       ".avi", fourcc, 20.0, (480,  360))
 ##################起飛準備##################
 section_time = time.time()
-# arm()
+arm()
+Init_yaw = math.degrees(vehicle.attitude.yaw)
 while (1):
     ret, frame = cap.read()
     frame = cv2.resize(frame, (160, 120))
@@ -61,7 +62,7 @@ while (1):
     #########################section0#########################
     # 原地起飛
     if section == 0:
-        setAltitude = 0.8
+        setAltitude = 1
         (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
             frame=frame, draw_frame=draw_frame, line_mask=h)
         # def takeoff
@@ -83,7 +84,7 @@ while (1):
         # section 切換時間
         elif ((time.time()-section_time) > 20):
             section_time = time.time()
-            section = 2
+            #section = 2
     #########################section1#########################
     # 直走起飛
     if section == 1:
@@ -193,12 +194,13 @@ while (1):
     #     lane_xy=(0.0, 0.0), lane_angle=0.0, lane_dis=0.0,
     #     target="None", target_xy=(0.0, 0.0), status="None", section=0, thrust=0)
 
-    if cv2.waitKey(10) & 0xFF == ord(' '):
+    if cv2.waitKey(1) & 0xFF == ord(' '):
         print("Key pressed EM land")
         break
     # out.write(back_frame)
-# set_attitude(pitch_angle=0, yaw_angle=0, roll_angle=0, thrust=0)
-# vehicle.armed = False
+set_attitude(pitch_angle=0, yaw_angle=c_yaw, roll_angle=0, thrust=0)
+vehicle.armed = False
+GPIO.cleanup()
 print("Mission end")
 cap.release()
 cv2.destroyAllWindows()
