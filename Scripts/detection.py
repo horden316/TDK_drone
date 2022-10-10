@@ -138,7 +138,7 @@ def drop_detect(frame, draw_frame, blue_lower, blue_upper):
             # Draw a small circle (of radius 1) to show the center.
             cv2.circle(draw_frame, (a, b), 1, (0, 0, 255), 3)
             # cv2.imshow("Detected Circle", img)
-    return drop, out_mask, draw_frame, (a, b), x_distance, y_distance
+    return drop, blue_mask, out_mask, draw_frame, (a, b), x_distance, y_distance
 
 
 def traffic_detect(frame, draw_frame, red_lower, red_upper, c_area=800):
@@ -175,6 +175,11 @@ def traffic_detect(frame, draw_frame, red_lower, red_upper, c_area=800):
                 cv2.putText(draw_frame, "Red Colour", (x, y),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.0,
                             (0, 0, 255))
+    #     else:
+    #         print("I don't see the line")
+    # if len(contours) == 0:
+    #     print("I don't see the line")
+
     return red, red_mask2, draw_frame, (cx, cy), x_distance, y_distance
 
 

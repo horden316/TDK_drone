@@ -14,7 +14,7 @@ cap = cv2.VideoCapture(
 status = None
 red_count = 0
 thrust = 0
-section = 4  # 設定起始階段
+section = 1  # 設定起始階段
 status1 = ""
 status2 = ""
 target = ""
@@ -29,14 +29,18 @@ section_time = time.time()
 h = 50
 # 紅燈mask
 red_lower = np.array([93, 83, 204], np.uint8)
-# red_lower = np.array([40, 40, 0], np.uint8)
 red_upper = np.array([198, 130, 255], np.uint8)
 # 藍色投放點mask
-blue_lower = np.array([94, 80, 2])
-blue_upper = np.array([120, 255, 255])
+# blue_lower = np.array([94, 80, 2], np.uint8)
+# blue_upper = np.array([120, 255, 255], np.uint8)
+blue_lower = np.array([107, 68, 36], np.uint8)
+blue_upper = np.array([151, 193, 103], np.uint8)
 line_mask = 0
 blue_mask = 0
 red_mask = 0
+# 紅色降落點mask
+red_h_lower = np.array([161, 87, 86], np.uint8)
+red_h_upper = np.array([220, 159, 195], np.uint8)
 # LOG 錄製
 fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 指定影像編碼方式
 out = cv2.VideoWriter("output"+str(int(time.time())) +
@@ -124,7 +128,7 @@ while (1):
             # print("move forward")
             # status = "move forward"
             pitch_angle, roll_angle, yaw_angle, status, thrust = move_forward(
-                x=lx, current_alt=c_alt, angle=None, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
             # 跳下個section ###!!!!!!隱患若是偵測到錯的redlight 將會跳下個section 法一:下個section也偵測red
             # 若是辨識過red
             if red_count > 100:
@@ -132,10 +136,12 @@ while (1):
     #########################section3#########################
     # 走線 + 投遞:
     if section == 3:
+        drop, mask_blue, blue_mask, draw_frame, (bx, by), x_distance, y_distance = drop_detect(
+            frame, draw_frame, blue_lower=blue_lower, blue_upper=blue_upper)
+        mask_blue = cv2.bitwise_not(mask_blue)
+        frame[mask_blue > 0] = (255, 255, 255)
         (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
             frame=frame, draw_frame=draw_frame, line_mask=50)
-        drop, blue_mask, draw_frame, (bx, by), x_distance, y_distance = drop_detect(
-            frame, draw_frame, blue_lower=blue_lower, blue_upper=blue_upper)
         # print(drop_cnt)
         if drop == True:
             drop_cnt += 1
@@ -152,15 +158,22 @@ while (1):
                 print("丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟")
         else:
             pitch_angle, roll_angle, yaw_angle, status, thrust = move_forward(
-                x=lx, current_alt=c_alt, angle=None, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
     #########################section4#########################
     # 走線 + 降落:
     if section == 4:
         (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
             frame=frame, draw_frame=draw_frame, line_mask=h)
-        red_h, red_h_mask, draw_frame, (tx, ty), t_x_dis, t_y_dis = traffic_detect(
-            frame=frame, draw_frame=draw_frame, red_lower=red_lower, red_upper=red_upper)
-
+        red_h, red_h_mask, draw_frame, (tx, ty), t_x_dis, t_y_dis = red_h_detect(
+            frame, draw_frame, red_lower, red_upper, c_area=1000)
+        if red == True:
+            red_count += 1
+            landing(tx, ty, current_alt=c_alt, thrust=0.4)
+        if red_count > 100:
+            landing(tx, ty, current_alt=c_alt, thrust=0.4)
+        else:
+            pitch_angle, roll_angle, yaw_angle, status, thrust = move_forward(
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
     ######################### SET ALTITUDE #########################
     # set_attitude(pitch_angle=pitch_angle, yaw_angle=yaw_angle,
     #              roll_angle=roll_angle, thrust=thrust)
@@ -176,7 +189,7 @@ while (1):
     #     lane_xy=(0.0, 0.0), lane_angle=0.0, lane_dis=0.0,
     #     target="None", target_xy=(0.0, 0.0), status="None", section=0, thrust=0)
 
-    if cv2.waitKey(0) & 0xFF == ord(' '):
+    if cv2.waitKey(10) & 0xFF == ord(' '):
         print("Key pressed EM land")
         break
     # out.write(back_frame)
