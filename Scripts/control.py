@@ -2,7 +2,7 @@ from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelativ
 from pymavlink import mavutil  # Needed for command message definitions
 import time
 import math
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 ###############SG90參數###################
 CONTROL_PIN = 17
 PWM_FREQ = 50
@@ -141,9 +141,9 @@ def set_attitude(roll_angle=0.0, pitch_angle=0.0,
         time.sleep(0.1)
 
     # Reset attitude, or it will persist for 1s more due to the timeout
-    send_attitude_target(0, 0,
-                         None, 0, True,
-                         thrust)
+    # send_attitude_target(0, 0,
+    #                      None, 0, True,
+    #                      thrust)
 
 
 # 投放機構伺服馬達
