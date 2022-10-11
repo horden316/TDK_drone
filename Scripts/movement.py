@@ -78,7 +78,7 @@ def stay(x, y, current_alt, angle=None, current_yaw=0, thrust=0.5):
                 yaw_angle = 180 + (yaw_angle+180)
             print("set:"+str(yaw_angle))
             print("yaw right")
-            pitchangle = 0
+            pitch_angle = 0
         elif angle < 0:
             theta = 90 + angle
             yaw_angle = current_yaw+theta
@@ -88,7 +88,7 @@ def stay(x, y, current_alt, angle=None, current_yaw=0, thrust=0.5):
                 yaw_angle = 180 + (yaw_angle+180)
             print("set:"+str(yaw_angle))
             print("yaw left")
-            pitchangle = 0
+            pitch_angle = 0
         # else:
         #     yaw_angle = current_yaw
     return pitch_angle, roll_angle, yaw_angle, thrust, status
