@@ -127,7 +127,7 @@ def traffic_detect(frame, draw_frame, red_lower, red_upper, c_area=800):
             x, y, w, h = cv2.boundingRect(contour)
             draw_frame = cv2.rectangle(draw_frame, (x, y),
                                        (x + w, y + h),
-                                       (0, 0, 255), 2)
+                                       (0, 255, 255), 2)
             if M["m00"] != 0:
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
