@@ -178,9 +178,9 @@ while (1):
         # 若是藍色面積大於定值關閉line detect的yaw
         number_of_blue_pix = np.sum(mask_blue == 255)
         print("blue pix=" + str(number_of_blue_pix))
-        if (number_of_blue_pix < 18000):
+        if (number_of_blue_pix > 500):
             line_angle = 90
-        # print(drop_cnt)
+        print(drop_cnt)
         if drop == True:
             drop_cnt += 1
             pitch_angle, roll_angle, yaw_angle, thrust, status = stay(
