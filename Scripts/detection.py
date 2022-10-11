@@ -27,6 +27,7 @@ def line_detect(frame, draw_frame, line_mask=50, cross_size=5, c_area=300):
     high_b = np.uint8([line_mask, line_mask, line_mask])
     mask = cv2.inRange(frame, high_b, low_b)
     remask = cv2.bitwise_not(mask)
+    remask = cv2.blur(remask, (10, 10))
     out_mask = cv2.merge((remask, remask, remask))
     contours, hierarchy = cv2.findContours(
         remask, 1, cv2.CHAIN_APPROX_SIMPLE)
