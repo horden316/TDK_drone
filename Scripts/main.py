@@ -26,7 +26,7 @@ red_stay_time = time.time()
 section_time = time.time()
 ##############mask參數##############
 # 黑線mask
-h = 50
+h = 65
 # 紅燈mask
 red_lower = np.array([93, 83, 204], np.uint8)
 red_upper = np.array([198, 130, 255], np.uint8)
