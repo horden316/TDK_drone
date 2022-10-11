@@ -10,6 +10,9 @@ import math
 # cap = cv2.VideoCapture(
 #     "C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
 cap = cv2.VideoCapture(0)
+# moveforward 偏移角
+right = 0
+left = 0
 ##############狀態參數##############
 status = None
 red_count = 0
@@ -103,7 +106,7 @@ while (1):
             pitch_angle = -2
             roll_angle = 0
             pitch_angle, roll_angle, yaw_angle, status2, _ = move_forward(
-                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=c_yaw, alpha=10)
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=c_yaw, right=right, left=left)
 
         status = status1 + status2
         if EM_land == True:
