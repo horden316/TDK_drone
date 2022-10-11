@@ -208,9 +208,9 @@ while (1):
             frame, draw_frame, red_lower, red_upper, c_area=1000)
         if red == True:
             red_count += 1
-            landing(tx, ty, current_alt=c_alt, thrust=0.4)
+            pitch_angle, roll_angle, thrust=landing(tx, ty, current_alt=c_alt, thrust=0.4)
         if red_count > 100:
-            landing(tx, ty, current_alt=c_alt, thrust=0.4)
+            pitch_angle, roll_angle, thrust=landing(tx, ty, current_alt=c_alt, thrust=0.4)
         else:
             pitch_angle, roll_angle, yaw_angle, status, thrust = move_forward(
                 x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
