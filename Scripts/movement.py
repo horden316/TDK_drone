@@ -129,7 +129,6 @@ def move_forward(x, current_alt, angle=None, move_pitch_angle=-1, stay_pitch_ang
                 yaw_angle = 180 + (yaw_angle+180)
             print("set:"+str(yaw_angle))
             print("yaw right")
-            pitch_angle = stay_pitch_angle
         elif angle < 0:
             theta = 90 + angle
             yaw_angle = current_yaw+theta
