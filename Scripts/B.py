@@ -148,7 +148,7 @@ while (1):
                 x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-1, current_yaw=c_yaw, thrust=0.5)
             # 跳下個section ###!!!!!!隱患若是偵測到錯的redlight 將會跳下個section 法一:下個section也偵測red
             # 若是辨識過red
-            if red_count > 100:
+            if red_count > 10:
                 section = 3
     #########################section3#########################
     # 走線 + 投遞:
@@ -190,11 +190,12 @@ while (1):
             frame=frame, draw_frame=draw_frame, line_mask=h)
         red_h, red_h_mask, draw_frame, (tx, ty), t_x_dis, t_y_dis = red_h_detect(
             frame, draw_frame, green_h_lower, green_h_upper, c_area=1000)
-        if red == True:
-            red_count += 1
+        print("red count:" + str(red_count_h))
+        if red_h == True:
+            red_count_h += 1
             # pitch_angle, roll_angle, thrust = landing(
             #     tx, ty, current_alt=c_alt, thrust=0.4)
-        if red_count > 10:
+        if red_count_h > 4:
             # pitch_angle, roll_angle, thrust = landing(
             #     tx, ty, current_alt=c_alt, thrust=0.4)
             # 直接墜落
