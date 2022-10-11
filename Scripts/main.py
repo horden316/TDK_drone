@@ -76,11 +76,19 @@ while (1):
         if thrust != 0.5:
             # def moveforward move_pitch_angle = 0
             yaw_angle = Init_yaw
-            pitch_angle, roll_angle, _, status2, _ = move_forward(
-                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-2, current_yaw=c_yaw)
+            pitch_angle = -2
+            roll_angle = 0
+            line_angle = 90
+            lx = 0
+            ly = 0
+            # pitch_angle, roll_angle, _, status2, _ = move_forward(
+            #     x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-3, current_yaw=c_yaw)
         else:
+            yaw_angle = Init_yaw
+            pitch_angle = -2
+            roll_angle = 0
             pitch_angle, roll_angle, yaw_angle, status2, _ = move_forward(
-                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-1, current_yaw=c_yaw)
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=c_yaw, alpha=10)
 
         status = status1 + status2
         if EM_land == True:
