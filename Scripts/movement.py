@@ -49,12 +49,8 @@ def stay(x, y, current_alt, angle=None, current_yaw=0, thrust=0.5):
     x_dis = center_x-x
     y_dis = center_y-y
     # 隨高度降低p值
-    if current_alt < 0.5:
-        PID_p = 0.0
-        PID_i = 0.0
-    else:
-        PID_p = 0.2
-        PID_i = 0.001
+    PID_p = 0.3
+    PID_i = 0.001
 
     if x > 0:
         # roll PID
