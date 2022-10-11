@@ -27,6 +27,9 @@ section_time = time.time()
 ##############mask參數##############
 # 黑線mask
 h = 65
+# blue h mask
+blue_h_lower = np.array([94, 80, 2])
+blue_h_upper = np.array([120, 255, 255])
 # 紅燈mask
 red_lower = np.array([93, 83, 204], np.uint8)
 red_upper = np.array([198, 130, 255], np.uint8)
@@ -48,6 +51,8 @@ out = cv2.VideoWriter("output"+str(int(time.time())) +
 # create white frame
 white = np.zeros([160, 120, 3], dtype=np.uint8)
 white.fill(255)
+# create white line frame
+line = cv2.rectangle(white, (60, 0), (100, 120), (0, 0, 0), -1)
 ##################起飛準備##################
 section_time = time.time()
 arm()
@@ -73,6 +78,9 @@ while (1):
         if thrust != 0.5:
             frame.fill(255)
             draw_frame.fill(255)
+        hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        out_mask = cv2.inRange(hsvFrame, blue_h_lower, blue_h_upper)
+        frame[out_mask > 0] = (255, 255, 255)
         (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
             frame=frame, draw_frame=draw_frame, line_mask=h, c_area=250)
         # def takeoff
