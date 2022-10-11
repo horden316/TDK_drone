@@ -21,12 +21,13 @@ target = ""
 target_xy = (0.0, 0.0)
 setAltitude = 0
 drop_cnt = 0
+red_count_h = 0
 ##############時間參數##############
 red_stay_time = time.time()
 section_time = time.time()
 ##############mask參數##############
 # 黑線mask
-h = 65
+h = 50
 # blue h mask
 blue_h_lower = np.array([94, 80, 2])
 blue_h_upper = np.array([120, 255, 255])
@@ -49,7 +50,7 @@ fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 指定影像編碼方式
 out = cv2.VideoWriter("output"+str(int(time.time())) +
                       ".avi", fourcc, 20.0, (480,  360))
 # create white frame
-white = np.zeros([160, 120, 3], dtype=np.uint8)
+white = np.zeros([120, 160, 3], dtype=np.uint8)
 white.fill(255)
 # create white line frame
 black_line = cv2.rectangle(white, (60, 0), (100, 120), (0, 0, 0), -1)
@@ -111,26 +112,6 @@ while (1):
         elif ((time.time()-section_time) > 12):
             section_time = time.time()
             section = 2
-    #########################section1#########################
-    # 直走起飛
-    if section == 1:
-        setAltitude = 0.8
-        (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
-            frame=frame, draw_frame=draw_frame, line_mask=h)
-        # def takeoff
-        thrust, status1, EM_land = takeoff(current_alt=c_alt, setAltitude=setAltitude,
-                                           setThrust=0.52, EM_land_time=10)
-        # def moveforward move_pitch_angle = 0
-        pitch_angle, roll_angle, yaw_angle, status2, _ = move_forward(
-            x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=c_yaw)
-        status = status1 + status2
-        if EM_land == True:
-            break
-        # section 切換時間
-        elif ((time.time()-section_time) > 20):
-            section_time = time.time()
-            #section = 2
-
     #########################section2#########################
     #走線 + 紅燈辨識
     if section == 2:
@@ -189,8 +170,8 @@ while (1):
                 target = "drop"
                 target_xy = (bx, by)
                 # 校正位置
-                pitch_angle, roll_angle, yaw_angle, thrust, status = stay(
-                    x=bx, y=by, current_alt=c_alt, angle=None, current_yaw=c_yaw, thrust=0.5)
+                pitch_angle = -1
+                roll_angle = 0
                 # 拋物
                 servo(servo_open=True)
                 print("丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟")
@@ -208,11 +189,13 @@ while (1):
             frame, draw_frame, red_h_lower, red_h_upper, c_area=1000)
         if red == True:
             red_count += 1
-            pitch_angle, roll_angle, thrust = landing(
-                tx, ty, current_alt=c_alt, thrust=0.4)
-        if red_count > 100:
-            pitch_angle, roll_angle, thrust = landing(
-                tx, ty, current_alt=c_alt, thrust=0.4)
+            # pitch_angle, roll_angle, thrust = landing(
+            #     tx, ty, current_alt=c_alt, thrust=0.4)
+        if red_count > 5:
+            # pitch_angle, roll_angle, thrust = landing(
+            #     tx, ty, current_alt=c_alt, thrust=0.4)
+            # 直接墜落
+            thrust = 0
         else:
             pitch_angle, roll_angle, yaw_angle, status, thrust = move_forward(
                 x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
