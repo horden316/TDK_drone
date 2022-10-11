@@ -26,7 +26,7 @@ red_stay_time = time.time()
 section_time = time.time()
 ##############mask參數##############
 # 黑線mask
-h = 50
+h = 65
 # 紅燈mask
 red_lower = np.array([93, 83, 204], np.uint8)
 red_upper = np.array([198, 130, 255], np.uint8)
@@ -45,6 +45,9 @@ red_h_upper = np.array([220, 159, 195], np.uint8)
 fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 指定影像編碼方式
 out = cv2.VideoWriter("output"+str(int(time.time())) +
                       ".avi", fourcc, 20.0, (480,  360))
+# create white frame
+white = np.zeros([160, 120, 3], dtype=np.uint8)
+white.fill(255)
 ##################起飛準備##################
 section_time = time.time()
 arm()
@@ -67,8 +70,11 @@ while (1):
         # blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
         # blue_mask = cv2.bitwise_not(blue_mask)
         # frame[blue_mask > 0] = (255, 255, 255)
+        if thrust != 0.5:
+            frame.fill(255)
+            draw_frame.fill(255)
         (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
-            frame=frame, draw_frame=draw_frame, line_mask=h)
+            frame=frame, draw_frame=draw_frame, line_mask=h, c_area=250)
         # def takeoff
         thrust, status1, EM_land = takeoff(current_alt=c_alt, setAltitude=setAltitude,
                                            setThrust=0.53, EM_land_time=10)
@@ -76,17 +82,25 @@ while (1):
         if thrust != 0.5:
             # def moveforward move_pitch_angle = 0
             yaw_angle = Init_yaw
-            pitch_angle, roll_angle, _, status2, _ = move_forward(
-                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-2, current_yaw=c_yaw)
+            pitch_angle = -2
+            roll_angle = 0
+            line_angle = 90
+            lx = 0
+            ly = 0
+            # pitch_angle, roll_angle, _, status2, _ = move_forward(
+            #     x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-3, current_yaw=c_yaw)
         else:
+            yaw_angle = Init_yaw
+            pitch_angle = -2
+            roll_angle = 0
             pitch_angle, roll_angle, yaw_angle, status2, _ = move_forward(
-                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=-1, current_yaw=c_yaw)
+                x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=c_yaw, alpha=10)
 
         status = status1 + status2
         if EM_land == True:
             break
         # section 切換時間
-        elif ((time.time()-section_time) > 8):
+        elif ((time.time()-section_time) > 12):
             section_time = time.time()
             section = 2
     #########################section1#########################
@@ -124,14 +138,16 @@ while (1):
             # status = "stay"
             pitch_angle, roll_angle, yaw_angle, thrust, status = stay(
                 x=tx, y=ty, current_alt=c_alt, angle=None, current_yaw=c_yaw, thrust=0.5)
+            # pitch_angle = 0.0
+            # roll_angle = 0.0
             # LOG 資訊
             target = "red light"
             target_xy = (tx, ty)
         # 如果轉false 清除目標值再走
         if (time.time()-red_stay_time) > 0.1:
             status = "stay clear pitch roll"
-            pitch_angle = 0
-            roll_angle = 0
+            pitch_angle = 0.0
+            roll_angle = 0.0
         # 如果轉false 等1再走
         if (time.time()-red_stay_time) > 3:
             # print("move forward")
@@ -187,12 +203,12 @@ while (1):
     set_attitude(pitch_angle=pitch_angle, yaw_angle=yaw_angle,
                  roll_angle=roll_angle, thrust=thrust)
     ######################### LOG #########################
-    back_frame = log(frame=draw_frame, lane_mask=line_mask, h_mask=(100, 0, 0), ex_frame=(100, 0, 0),
+    back_frame = log(frame=draw_frame, h_mask=(100, 0, 0), lane_mask=line_mask, ex_frame=(100, 0, 0),
                      show=True, alt=c_alt, pitch=c_pitch, roll=c_roll, yaw=c_yaw,
                      t_alt=setAltitude, t_pitch=pitch_angle, t_roll=roll_angle, t_yaw=yaw_angle,
                      lane_xy=(lx, ly), lane_angle=line_angle,
                      target=target, target_xy=target_xy, status=status, section=section, thrust=thrust)
-    # log(frame=(100, 0, 0), lane_mask=(100, 0, 0), red_mask=(100, 0, 0), drop_mask=(100, 0, 0), h_mask=(100, 0, 0), ex_frame=(100, 0, 0),
+    # log(frame=(100, 0, 0), lane_mask=line_mask, red_mask=(100, 0, 0), drop_mask=(100, 0, 0), h_mask=(100, 0, 0), ex_frame=(100, 0, 0),
     #     show=True, alt=0.0, pitch=0.0, roll=0.0, yaw=0.0,
     #     t_alt=0.0, t_pitch=0.0, t_roll=0.0, t_yaw=0.0,
     #     lane_xy=(0.0, 0.0), lane_angle=0.0, lane_dis=0.0,
