@@ -9,10 +9,10 @@ center_y = int(Y/2)
 red = False
 
 
-def distanceCalculate(p1, p2):
-    """p1 and p2 in format (x1,y1) and (x2,y2) tuples"""
-    dis = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
-    return dis
+# def distanceCalculate(p1, p2):
+#     """p1 and p2 in format (x1,y1) and (x2,y2) tuples"""
+#     dis = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
+#     return dis
 
 
 def line_detect(frame, draw_frame, line_mask=50, cross_size=5, c_area=300):
@@ -61,7 +61,6 @@ def line_detect(frame, draw_frame, line_mask=50, cross_size=5, c_area=300):
                 # BGR
                 cv2.line(draw_frame,  center,
                          (cx, cy), (0, 255, 255), 1)
-                distance = distanceCalculate(center, (cx, cy))
     return (cx, cy), angle, frame, out_mask, x_distance, y_distance
 
 
