@@ -192,7 +192,7 @@ while (1):
                 pitch_angle, roll_angle, yaw_angle, thrust, status = stay(
                     x=bx, y=by, current_alt=c_alt, angle=None, current_yaw=c_yaw, thrust=0.5)
                 # 拋物
-                # servo(servo_open=True)
+                servo(servo_open=True)
                 print("丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟")
         else:
             pitch_angle, roll_angle, yaw_angle, status, thrust = move_forward(
