@@ -4,7 +4,7 @@ import time
 import math
 import RPi.GPIO as GPIO
 ###############SG90參數###################
-CONTROL_PIN = 17
+CONTROL_PIN = 27
 PWM_FREQ = 50
 STEP = 90
 GPIO.setmode(GPIO.BCM)
@@ -154,9 +154,9 @@ def angle_to_duty_cycle(angle=0):
 
 
 def servo(servo_open=False):
-    if servo_open == True:
+    if servo_open == False:
         dc = angle_to_duty_cycle(5)
         pwm.ChangeDutyCycle(dc)
-    if servo_open == False:
+    if servo_open == True:
         dc = angle_to_duty_cycle(90)
         pwm.ChangeDutyCycle(dc)

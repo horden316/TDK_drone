@@ -185,21 +185,23 @@ while (1):
             drop_cnt += 1
             pitch_angle, roll_angle, yaw_angle, thrust, status = stay(
                 x=bx, y=by, current_alt=c_alt, angle=None, current_yaw=c_yaw, thrust=0.5)
-            if (drop_cnt > 100):
+            if (drop_cnt > 20):
                 target = "drop"
                 target_xy = (bx, by)
                 # 校正位置
                 pitch_angle, roll_angle, yaw_angle, thrust, status = stay(
                     x=bx, y=by, current_alt=c_alt, angle=None, current_yaw=c_yaw, thrust=0.5)
                 # 拋物
-                servo(servo_open=True)
+                servo(servo_open=True )
                 print("丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟丟")
+                section = 4
         else:
             pitch_angle, roll_angle, yaw_angle, status, thrust = move_forward(
                 x=lx, current_alt=c_alt, angle=line_angle, move_pitch_angle=-1, stay_pitch_angle=0, current_yaw=0, thrust=0.5)
     #########################section4#########################
     # 走線 + 降落:
     if section == 4:
+        
         (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
             frame=frame, draw_frame=draw_frame, line_mask=h)
         red_h, red_h_mask, draw_frame, (tx, ty), t_x_dis, t_y_dis = red_h_detect(
