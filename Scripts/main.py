@@ -52,7 +52,7 @@ out = cv2.VideoWriter("output"+str(int(time.time())) +
 white = np.zeros([160, 120, 3], dtype=np.uint8)
 white.fill(255)
 # create white line frame
-line = cv2.rectangle(white, (60, 0), (100, 120), (0, 0, 0), -1)
+black_line = cv2.rectangle(white, (60, 0), (100, 120), (0, 0, 0), -1)
 ##################起飛準備##################
 section_time = time.time()
 arm()
@@ -76,8 +76,8 @@ while (1):
         # blue_mask = cv2.bitwise_not(blue_mask)
         # frame[blue_mask > 0] = (255, 255, 255)
         if thrust != 0.5:
-            frame.fill(255)
-            draw_frame.fill(255)
+            frame = white
+            draw_frame = black_line
         hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         out_mask = cv2.inRange(hsvFrame, blue_h_lower, blue_h_upper)
         frame[out_mask > 0] = (255, 255, 255)
@@ -175,6 +175,11 @@ while (1):
         frame[mask_blue > 0] = (255, 255, 255)
         (lx, ly), line_angle, line_frame, line_mask, line_x_dis, line_y_dis = line_detect(
             frame=frame, draw_frame=draw_frame, line_mask=50)
+        # 若是藍色面積大於定值關閉line detect的yaw
+        number_of_blue_pix = np.sum(mask_blue == 255)
+        print("blue pix=" + str(number_of_blue_pix))
+        if (number_of_blue_pix < 18000):
+            line_angle = 90
         # print(drop_cnt)
         if drop == True:
             drop_cnt += 1
