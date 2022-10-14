@@ -10,9 +10,9 @@ import math
 # cap = cv2.VideoCapture(
 #     "C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\video.mp4")
 cap = cv2.VideoCapture(0)
-###################################moveforward 偏移角
-right= 0
-left= 0
+# moveforward 偏移角
+right = 0
+left = 0
 ##############狀態參數##############
 status = None
 red_count = 0
@@ -55,10 +55,17 @@ out = cv2.VideoWriter("output"+str(int(time.time())) +
 # create white frame
 white = np.zeros([120, 160, 3], dtype=np.uint8)
 white.fill(255)
+waiting_frame = white.copy()
+cv2.putText(waiting_frame, "Space to start", (0, 70),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+            (0, 0, 255))
 # create white line frame
 black_line = cv2.rectangle(white, (60, 0), (100, 120), (0, 0, 0), -1)
 ##################起飛準備##################
 section_time = time.time()
+cv2.imshow("Press Enter to start", waiting_frame)
+if cv2.waitKey(0) & 0xFF == ord(' '):
+    print("Press Enter to start")
 arm()
 Init_yaw = math.degrees(vehicle.attitude.yaw)
 while (1):
