@@ -114,6 +114,7 @@ def traffic_detect(frame, draw_frame, red_lower, red_upper, c_area=800):
     #################################
     hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     red_mask = cv2.inRange(hsvFrame, red_lower, red_upper)
+    red_mask = cv2.blur(red_mask, (10, 10))
     red_mask2 = cv2.merge((red_mask, red_mask, red_mask))
     contours, hierarchy = cv2.findContours(red_mask,
                                            cv2.RETR_TREE,
@@ -157,6 +158,7 @@ def red_h_detect(frame, draw_frame, red_lower, red_upper, c_area=800):
     hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     red_h_mask = cv2.inRange(hsvFrame, red_lower, red_upper)
     red_h_mask2 = cv2.merge((red_h_mask, red_h_mask, red_h_mask))
+    red_h_mask = cv2.blur(red_h_mask, (10, 10))
     contours, hierarchy = cv2.findContours(red_h_mask,
                                            cv2.RETR_TREE,
                                            cv2.CHAIN_APPROX_SIMPLE)
@@ -165,7 +167,7 @@ def red_h_detect(frame, draw_frame, red_lower, red_upper, c_area=800):
         M = cv2.moments(c_color)
         area = cv2.contourArea(contour)
         if (area > 800):
-            red = True
+            red_h = True
             x, y, w, h = cv2.boundingRect(contour)
             draw_frame = cv2.rectangle(draw_frame, (x, y),
                                        (x + w, y + h),
