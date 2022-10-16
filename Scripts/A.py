@@ -55,18 +55,11 @@ out = cv2.VideoWriter("output"+str(int(time.time())) +
 # create white frame
 white = np.zeros([120, 160, 3], dtype=np.uint8)
 white.fill(255)
-waiting_frame = white.copy()
-cv2.putText(waiting_frame, "Space to start", (0, 70),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-            (0, 0, 255))
 # create white line frame
 black_line = cv2.rectangle(white, (60, 0), (100, 120), (0, 0, 0), -1)
 ##################起飛準備##################
-section_time = time.time()
-cv2.imshow("Press Enter to start", waiting_frame)
-if cv2.waitKey(0) & 0xFF == ord(' '):
-    print("Press Enter to start")
 arm()
+section_time = time.time()
 Init_yaw = math.degrees(vehicle.attitude.yaw)
 while (1):
     ret, frame = cap.read()
@@ -96,7 +89,7 @@ while (1):
             frame=frame, draw_frame=draw_frame, line_mask=h, c_area=250)
         # def takeoff
         thrust, status1, EM_land = takeoff(current_alt=c_alt, setAltitude=setAltitude,
-                                           setThrust=0.53, EM_land_time=10)
+                                           setThrust=0.53, EM_land_time=12)
 
         if thrust != 0.5:
             # def moveforward move_pitch_angle = 0
