@@ -1,3 +1,4 @@
+# 1002 with PID
 import cv2
 import numpy as np
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
@@ -19,6 +20,15 @@ blank_width = 480
 blank_height = 360
 
 
+# roll PID variables
+Kp = 0.35
+Ki = 0
+Kd = 0
+Target_value = 0
+last_Err = 0
+total_Err = 0
+output = 0
+
 # screen resolution
 X = 160
 Y = 120
@@ -33,9 +43,9 @@ connection_string = '/dev/ttyACM0'
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=115200)
 
-DEFAULT_TAKEOFF_THRUST = 0.53
-aTargetAltitude = 0.6
-limit_time = 10
+DEFAULT_TAKEOFF_THRUST = 0.52
+aTargetAltitude = 0.8
+limit_time = 15
 hold_time = 2664609484
 Reached_target = False
 
@@ -143,7 +153,6 @@ def set_attitude(roll_angle=0.0, pitch_angle=0.0,
     send_attitude_target(roll_angle, pitch_angle,
                          yaw_angle, yaw_rate, False,
                          thrust)
-
     start = time.time()
     while time.time() - start < duration:
         send_attitude_target(roll_angle, pitch_angle,
@@ -151,13 +160,26 @@ def set_attitude(roll_angle=0.0, pitch_angle=0.0,
                              thrust)
         time.sleep(0.1)
 
+    # 原本在這裡有的是我們把它註解掉的
     # Reset attitude, or it will persist for 1s more due to the timeout
-    send_attitude_target(0, 0,
-                         0, 0, True,
-                         thrust)
+    # send_attitude_target(0, 0,
+    #                      0, 0, True,
+    #                      thrust)
 
+
+def PID(Error=0, Kp=0.8, Ki=0, Kd=0, max_angle=15, a=0.2):
+    total_Err = total_Err + Error
+    output = -(Kp*Error + Ki*total_Err + Kd * (Error - last_Err))
+    last_Err = Error
+    pid_angle = output*a
+    if pid_angle > max_angle:
+        pid_angle = max_angle
+    if pid_angle < -max_angle:
+        pid_angle = -max_angle
+    return pid_angle
 
 ##############主程式##############
+
 
 yawangle = math.degrees(vehicle.attitude.yaw)
 
@@ -179,7 +201,14 @@ current_altitude = vehicle.rangefinder.distance
 
 start = time.time()
 RefreshTime = time.time()
-yawangle = math.degrees(vehicle.attitude.yaw)
+rollangle = 0
+pitchangle = 0
+
+'''
+# 往前走一點點
+set_attitude(yaw_angle=yawangle, pitch_angle=-5,
+             thrust=DEFAULT_TAKEOFF_THRUST, duration=1)
+'''
 
 # Takeoff
 while True:
@@ -196,15 +225,19 @@ while True:
 
     if time.time() - start > limit_time:
         print("take off timeout")
+        set_attitude(pitch_angle=0, yaw_angle=yawangle,
+                     roll_angle=0, thrust=0)
+
+        '''
         print("change mode to landing")
         SetFixedText("change mode to landing")
         vehicle.mode = VehicleMode("LAND")
-        time.sleep(1)
-        while True:
-            time.sleep(1)
-            print("vehicle emergency landing: open controller")
-            WriteText(frame2, "vehicle emergency landing: open controller", 1)
-    # Trigger just below target alt.
+        '''
+
+        # time.sleep(2)
+        print("vehicle emergency landing: open controller")
+        WriteText(frame2, "vehicle emergency landing: open controller", 1)
+        break
     if current_altitude >= aTargetAltitude and Reached_target == False:
         print("Reached target altitude")
         SetFixedText("Reached target altitude")
@@ -212,12 +245,7 @@ while True:
         Reached_target = True
         hold_time = time.time()
         # break
-
-    if time.time() - hold_time > 5:
-        break
-
-    set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
-
+    # set_attitude(thrust=DEFAULT_TAKEOFF_THRUST)
     ret, frame = cap.read()
 
     low_b = np.uint8([255, 255, 255])
@@ -234,101 +262,135 @@ while True:
              (center_x, center_y+cross_size), (0, 0, 255), 1)
     cv2.line(frame, (center_x-cross_size, center_y),
              (center_x+cross_size, center_y), (0, 0, 255), 1)
-    start = time.time()
-    if time.time() - start > 20:
-        print("Setting LAND mode...")
-        SetFixedText("Setting LAND mode...")
-        vehicle.mode = VehicleMode("LAND")
-        time.sleep(1)
-        break
-    if len(contours) > 0:
+    #start = time.time()
+
+    for pic, contour in enumerate(contours):
         c = max(contours, key=cv2.contourArea)
         M = cv2.moments(c)
-        blackbox = cv2.minAreaRect(c)
-        (x_min, y_min), (w_min, h_min), angle = blackbox
-        box = cv2.boxPoints(blackbox)
-        box = np.int0(box)
-        cv2.drawContours(frame, [box], 0, (0, 0, 255), 3)
-        if angle < -45:
-            angle = 90 + angle
-        if w_min < h_min and angle > 0:
-            angle = (90 - angle) * -1
-        if w_min > h_min and angle < 0:
-            angle = 90 + angle
-        print("Angle:" + str(angle))
-        cv2.putText(frame, "Angle: " + str(angle), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
-                    cv2.LINE_AA)
-
-        if M["m00"] != 0:
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            print("X : "+str(cx)+" Y : "+str(cy))
-            x_distance = center[0]-cx
-            if x_distance > 10:
-                print("Roll left")
-                WriteText(frame2, "Roll left", 2)
-                set_attitude(yaw_angle=yawangle, roll_angle=5,
-                             thrust=DEFAULT_TAKEOFF_THRUST)
-
-            elif x_distance < -10 and cx > 40:
-                print("Roll right")
-                WriteText(frame2, "Roll right", 2)
-                set_attitude(yaw_angle=yawangle, roll_angle=-
-                             5, thrust=DEFAULT_TAKEOFF_THRUST)
-            else:
-                print("Pitch Forward")
-                WriteText(frame2, "Pitch Forward", 2)
-                set_attitude(yaw_angle=yawangle, pitch_angle=0,
-                             thrust=DEFAULT_TAKEOFF_THRUST)
-
-            cv2.circle(frame, (cx, cy), 5, (0, 0, 255), -1)
-            # centroid line
-            cv2.line(frame,  center, (cx, cy), (0, 255, 255), 1)
-            # BGR
-            cv2.line(frame,  center, (cx, cy), (0, 255, 255), 1)
-            #distance = distanceCalculate(center, (cx,cy))
-            cv2.putText(frame, "x_distance: " + str(x_distance), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
+        area = cv2.contourArea(contour)
+        if (area > 100):
+            blackbox = cv2.minAreaRect(c)
+            (x_min, y_min), (w_min, h_min), angle = blackbox
+            box = cv2.boxPoints(blackbox)
+            box = np.int0(box)
+            cv2.drawContours(frame, [box], 0, (0, 0, 255), 3)
+            if angle < -45:
+                angle = 90 + angle
+            if w_min < h_min and angle > 0:
+                angle = (90 - angle) * -1
+            if w_min > h_min and angle < 0:
+                angle = 90 + angle
+            print("Angle:" + str(angle))
+            cv2.putText(frame, "Angle: " + str(angle), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
                         cv2.LINE_AA)
 
-        '''
-        if angle > 0:
-            theta = 90 - angle
-            set_attitude(yaw_angle=yawangle-theta,
-                         thrust=DEFAULT_TAKEOFF_THRUST)
-            print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            WriteText(frame2, "current_yaw:" +
-                      str(math.degrees(vehicle.attitude.yaw)), 4)
-            print("set:"+str(yawangle-theta))
-            WriteText(frame2, "set:"+str(yawangle-theta), 3)
-            print("yaw right")
-            WriteText(frame2, "yaw right", 5)
-        elif angle <= 0:
-            theta = 90 + angle
-            set_attitude(yaw_angle=yawangle+theta,
-                         thrust=DEFAULT_TAKEOFF_THRUST)
-            print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            WriteText(frame2, "current_yaw:" +
-                      str(math.degrees(vehicle.attitude.yaw)), 4)
-            print("set:"+str(yawangle+theta))
-            WriteText(frame2, "set:"+str(yawangle+theta), 3)
-            print("yaw left")
-            WriteText(frame2, "yaw left", 5)
-        else:
-            print("Pitch Forward")
-            WriteText(frame2, "Pitch Forward", 5)
-            print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
-            WriteText(frame2, "current_yaw:" +
-                      str(math.degrees(vehicle.attitude.yaw)), 4)
-            set_attitude(pitch_angle=-5, thrust=DEFAULT_TAKEOFF_THRUST)
+            if M["m00"] != 0:
+                cx = int(M['m10']/M['m00'])
+                cy = int(M['m01']/M['m00'])
+                print("X : "+str(cx)+" Y : "+str(cy))
+                x_distance = center[0]-cx
+                y_distance = center[1]-cy
+                Error = x_distance
+                total_Err = total_Err + Error
+                output = -(Kp*Error + Ki*total_Err + Kd * (Error - last_Err))
+                last_Error = Error
+                u = output
+                rollangle = u*0.2
+                if rollangle > 15:
+                    rollangle = 15
+                if rollangle < -15:
+                    rollangle = -15
+                # if x_distance > 10 :
+                #     print("Roll right")
+                #     WriteText(frame2, "Roll right", 2)
+                #     set_attitude(roll_angle = -5, thrust = DEFAULT_TAKEOFF_THRUST)
+                # elif x_distance < -10 and cx > 40 :
+                #     print("Roll left")
+                #     WriteText(frame2, "Roll left", 2)
+                #     set_attitude(roll_angle = 5, thrust = DEFAULT_TAKEOFF_THRUST)
+                # else:
+                #     print("Pitch Forward")
+                #     WriteText(frame2, "Pitch Forward", 2)
+                #     set_attitude(pitch_angle = 0, thrust = DEFAULT_TAKEOFF_THRUST)
 
-        '''
-    else:
+                cv2.circle(frame, (cx, cy), 5, (0, 0, 255), -1)
+                # centroid line
+                cv2.line(frame,  center, (cx, cy), (0, 255, 255), 1)
+                # BGR
+                cv2.line(frame,  center, (cx, cy), (0, 255, 255), 1)
+                #distance = distanceCalculate(center, (cx,cy))
+                cv2.putText(frame, "x_distance: " + str(x_distance), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
+                            cv2.LINE_AA)
+                cv2.putText(frame, "roll: " + str(rollangle), (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (201, 194, 9), 1,
+                            cv2.LINE_AA)
+
+            if angle > 0:
+                theta = 90 - angle
+                yawangle = math.degrees(vehicle.attitude.yaw)-theta
+                if(yawangle > 180):
+                    yawangle = -180 + (yawangle-180)
+                if(yawangle < -180):
+                    yawangle = 180 + (yawangle+180)
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:" +
+                          str(math.degrees(vehicle.attitude.yaw)), 4)
+                print("set:"+str(yawangle))
+                WriteText(frame2, "set:"+str(yawangle), 3)
+                print("yaw right")
+                WriteText(frame2, "yaw right", 5)
+
+            elif angle <= 0:
+                theta = 90 + angle
+                yawangle = math.degrees(vehicle.attitude.yaw)+theta
+                if(yawangle > 180):
+                    yawangle = -180 + (yawangle-180)
+                if(yawangle < -180):
+                    yawangle = 180 + (yawangle+180)
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:" +
+                          str(math.degrees(vehicle.attitude.yaw)), 4)
+                print("set:"+str(yawangle))
+                WriteText(frame2, "set:"+str(yawangle), 3)
+                print("yaw left")
+                WriteText(frame2, "yaw left", 5)
+
+            if (angle > 80 or angle < -80) and x_distance < 15:
+                print("Pitch Forward")
+                WriteText(frame2, "Pitch Forward", 6)
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:" +
+                          str(math.degrees(vehicle.attitude.yaw)), 4)
+                pitchangle = -1
+
+            else:
+                print("Pitch Stop")
+                WriteText(frame2, "Pitch Stop", 6)
+                print("current_yaw:"+str(math.degrees(vehicle.attitude.yaw)))
+                WriteText(frame2, "current_yaw:" +
+                          str(math.degrees(vehicle.attitude.yaw)), 4)
+                pitchangle = 0
+            ###########################送出set_altitude 指令###########################
+
+        else:
+            print("I don't see the line")
+            WriteText(frame2, "I don't see the line", 1)
+            pitchangle = 0
+            #rollangle = 0
+        #cv2.drawContours(frame, c, -1, (0,255,0), 5)
+        # cv2.imshow("Mask",remask)
+        # cv2.imshow("Erosion",erosion)
+        # cv2.imshow("Frame",frame)
+
+    if len(contours) == 0:
         print("I don't see the line")
         WriteText(frame2, "I don't see the line", 1)
-    #cv2.drawContours(frame, c, -1, (0,255,0), 5)
-    # cv2.imshow("Mask",remask)
-    # cv2.imshow("Erosion",erosion)
-    # cv2.imshow("Frame",frame)
+        pitchangle = 0
+
+    if time.time() - start > 5:
+        set_attitude(pitch_angle=pitchangle, yaw_angle=yawangle,
+                     roll_angle=rollangle, thrust=DEFAULT_TAKEOFF_THRUST)
+    else:
+        set_attitude(yaw_angle=yawangle, thrust=DEFAULT_TAKEOFF_THRUST)
 
     h, w, _ = frame.shape
     frame2[0:h, 0:w] = frame
@@ -338,20 +400,28 @@ while True:
 
     out.write(frame2)
 
-    if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
-        print("Setting LAND mode...")
-        vehicle.mode = VehicleMode("LAND")
-        time.sleep(20)
+    # if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
+    # print("Setting LAND mode...")
+    # vehicle.mode = VehicleMode("LAND")
+    # time.sleep(2)
+    # break
+
+    if cv2.waitKey(1) & 0xff == ord('x'):   # 1 is the time in ms
+        print("Emergency land!!!!!!!")
+        set_attitude(pitch_angle=0, yaw_angle=0, roll_angle=0, thrust=0)
+        vehicle.armed = False
         break
+        # while True:
+        #     set_attitude(pitch_angle=0, yaw_angle=0,
+        #                  roll_angle=0, thrust=0)
 
 
-print("Reached target altitude")
-set_attitude(thrust=0.5)
-print("Setting LAND mode...")
+#startLANDtime = time.time()
 
-
-vehicle.mode = VehicleMode("LAND")
-
+# if time.time()-startLANDtime > 0:
+set_attitude(pitch_angle=0, yaw_angle=yawangle,
+             roll_angle=0, thrust=0)
+vehicle.armed = False
 
 print("Close vehicle object")
 vehicle.close()

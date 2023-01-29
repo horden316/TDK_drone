@@ -13,7 +13,7 @@ def on_mouse_click (event, x, y, flags, frame):
 def do_nothing():
     pass
 def main():
-    capture = cv2.VideoCapture(1)
+    capture = cv2.VideoCapture("C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\red_h2.jpg")
     start = time.time()
     while True:
         _, frame = capture.read()
@@ -52,7 +52,7 @@ def main():
     cv2.createTrackbar("G MIN", "Slider", 0, 255, do_nothing)
     cv2.createTrackbar("B MAX", "Slider", 0, 255, do_nothing)
     cv2.createTrackbar("B MIN", "Slider", 0, 255, do_nothing)
-    capture = cv2.VideoCapture(1)
+    capture = cv2.VideoCapture("C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\red_h2.jpg")
     while(1):
         r_max = cv2.getTrackbarPos("R MAX", "Slider")
         r_min = cv2.getTrackbarPos("R MIN", "Slider")

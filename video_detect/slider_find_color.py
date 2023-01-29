@@ -17,7 +17,7 @@ def main():
     start = time.time()
     while True:
         #_, frame = capture.read()
-        frame=cv2.imread("C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\rgb.jpg")
+        frame=cv2.imread("C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\red_h2.jpg")
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HLS_FULL)
         if colors:
             cv2.putText(frame, str(colors[-1]), (10, 50), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 0), 2)
@@ -64,7 +64,7 @@ def main():
         # average_color = [63, 153, 172]
         #print("red:"+ str(red))
         #_, imageFrame = capture.read() 
-        imageFrame=cv2.imread("C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\rgb.jpg")
+        imageFrame=cv2.imread("C:\\Users\\ericn\\Desktop\\TDK26\\TDK_drone\\video_detect\\h.jpg")
         hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
         # color_upper = np.array([ub[0] + thres, ub[1] + thres, ub[2] + thres], np.uint8)
         # color_lower = np.array([lb[0] - thres, lb[1] - thres, lb[2] - thres], np.uint8)
